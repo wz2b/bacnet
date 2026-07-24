@@ -6,6 +6,26 @@ import (
 	"math"
 )
 
+func NewReadPropertyACKEncoded(
+	pdu []byte,
+	invokeID byte,
+	objectType uint16,
+	objectInstance uint32,
+	propertyIdentifier uint32,
+	arrayIndex *uint32,
+	encodedValue []byte,
+) *ReadPropertyACK {
+	return &ReadPropertyACK{
+		PDU:                pdu,
+		InvokeID:           invokeID,
+		ObjectType:         objectType,
+		ObjectInstance:     objectInstance,
+		PropertyIdentifier: propertyIdentifier,
+		ArrayIndex:         arrayIndex,
+		EncodedValue:       append([]byte(nil), encodedValue...),
+	}
+}
+
 // ReadPropertyRequest is the service-specific portion of a BACnet
 // ReadProperty confirmed request.
 //
@@ -146,9 +166,14 @@ func (r *ReadPropertyRequest) Decode() (*ReadPropertyRequest, error) {
 }
 
 // ReadPropertyACK represents an unsegmented ComplexACK carrying one
-// ReadProperty result whose property value is a BACnet REAL.
+// ReadProperty result.
 //
-// This is sufficient for an Analog Value Present_Value demonstration.
+// EncodedValue, when non-empty, must contain exactly one BACnet
+// application-tagged value. It must not include the surrounding
+// context tag 3 opening and closing tags.
+//
+// RealValue is retained for backward compatibility. It is used only
+// when EncodedValue is empty.
 type ReadPropertyACK struct {
 	PDU []byte
 
@@ -160,8 +185,13 @@ type ReadPropertyACK struct {
 	PropertyIdentifier uint32
 	ArrayIndex         *uint32
 
+	// Encoded BACnet application-tagged value.
+	EncodedValue []byte
+
+	// Retained temporarily for compatibility.
 	RealValue float32
-	Length    int
+
+	Length int
 }
 
 func NewReadPropertyACK(
@@ -197,10 +227,18 @@ func NewReadPropertyACK(
 //	[1] propertyIdentifier
 //	[2] propertyArrayIndex OPTIONAL
 //	[3] propertyValue opening tag
-//	    application REAL
+//	    application-tagged value
 //	[3] propertyValue closing tag
 func (a *ReadPropertyACK) Encode() *ReadPropertyACK {
 	offset := 0
+
+	requiredCapacity := 64 + len(a.EncodedValue)
+
+	if len(a.PDU) < requiredCapacity {
+		newPDU := make([]byte, requiredCapacity)
+		copy(newPDU, a.PDU)
+		a.PDU = newPDU
+	}
 
 	a.PDU[offset] = PDU_TYPE_COMPLEX_ACK
 	offset++
@@ -237,10 +275,15 @@ func (a *ReadPropertyACK) Encode() *ReadPropertyACK {
 		3,
 	)
 
-	offset += encodeApplicationReal(
-		a.PDU[offset:],
-		a.RealValue,
-	)
+	if len(a.EncodedValue) > 0 {
+		copy(a.PDU[offset:], a.EncodedValue)
+		offset += len(a.EncodedValue)
+	} else {
+		offset += encodeApplicationReal(
+			a.PDU[offset:],
+			a.RealValue,
+		)
+	}
 
 	offset += encode_closing_tag(
 		a.PDU[offset:],

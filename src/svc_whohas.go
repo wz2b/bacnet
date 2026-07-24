@@ -5,12 +5,12 @@ func NewWhoHasAPDU(pdu []byte, high, low int32, isObjectName bool, identifier BA
 		pdu = make([]byte, 50)
 	}
 	apdu := &WhoHas{
-		PDU: pdu,
-		LowLimit: low,
-		HighLimit: high,
+		PDU:          pdu,
+		LowLimit:     low,
+		HighLimit:    high,
 		IsObjectName: isObjectName,
-		Identifier: identifier,
-		Name: name,
+		Identifier:   identifier,
+		Name:         name,
 	}
 	return apdu
 }
@@ -63,82 +63,148 @@ func (self *WhoHas) Encode() Service {
 
 // TODO: WhoHas Service Request Decode
 func (self *WhoHas) Decode() Service {
+	self.Length = -1
 
-	var decodeIdx int = 0
-	var len_tmp int = 0
-	var len_value uint32 = 0
-	var decoded_value uint32 = 0
-
-	if self.PDU[0] == PDU_TYPE_UNCONFIRMED_SERVICE_REQUEST && self.PDU[1] == SERVICE_UNCONFIRMED_WHO_HAS {
-		decodeIdx = 2
+	if len(self.PDU) < 2 {
+		return self
 	}
 
-	var apdu_len int = len(self.PDU[decodeIdx:])
+	if self.PDU[0] != PDU_TYPE_UNCONFIRMED_SERVICE_REQUEST ||
+		self.PDU[1] != SERVICE_UNCONFIRMED_WHO_HAS {
+		return self
+	}
 
-	if apdu_len > 0 {
-		// optional limits - must be used as a pair
-		if (decode_is_context_tag(self.PDU[decodeIdx:], 0)) {
+	decodeIdx := 2
 
-			len_tmp, _, len_value = decode_tag_number_and_value(self.PDU[decodeIdx:])
-			decodeIdx += len_tmp
+	self.LowLimit = -1
+	self.HighLimit = -1
 
-			len_tmp, decoded_value = decode_unsigned(self.PDU[decodeIdx:], len_value)
-			decodeIdx += len_tmp
+	/*
+		Optional device-instance limits.
 
-			if (int32(decoded_value) <= BACNET_MAX_INSTANCE) {
-				self.LowLimit = int32(decoded_value)
-			}
+		If either limit is present, both must be present.
+	*/
+	if decodeIdx < len(self.PDU) &&
+		decode_is_context_tag(self.PDU[decodeIdx:], 0) {
 
-			// Decode HighLimit if available
-			if (!decode_is_context_tag(self.PDU[decodeIdx:], 1)) {
-				self.Length = -1
-				return self
-			}
+		lenTmp, _, lenValue :=
+			decode_tag_number_and_value(self.PDU[decodeIdx:])
+		decodeIdx += lenTmp
 
-			len_tmp, _, len_value = decode_tag_number_and_value(self.PDU[decodeIdx:])
-			decodeIdx += len_tmp
-
-			len_tmp, decoded_value = decode_unsigned(self.PDU[decodeIdx:], len_value)
-			if (int32(decoded_value) <= BACNET_MAX_INSTANCE) {
-				self.HighLimit = int32(decoded_value)
-			}
-
-		} else {
-
-			self.LowLimit = -1
-			self.HighLimit = -1
-
+		if lenTmp <= 0 ||
+			lenValue == 0 ||
+			lenValue > 4 ||
+			int(lenValue) > len(self.PDU)-decodeIdx {
+			return self
 		}
 
-		/* object id */
-		if (decode_is_context_tag(self.PDU[decodeIdx:], 2)) {
+		lenTmp, decodedValue :=
+			decode_unsigned(self.PDU[decodeIdx:], lenValue)
+		decodeIdx += lenTmp
 
-			self.IsObjectName = false
-			len_tmp, _, len_value = decode_tag_number_and_value(self.PDU[decodeIdx:])
-			decodeIdx += len_tmp
-
-			len_tmp, self.Identifier.Type, self.Identifier.Instance = decode_object_id(self.PDU[decodeIdx:])
-			decodeIdx += len_tmp
-
-		} else if (decode_is_context_tag(self.PDU[decodeIdx:], 3)) {
-
-			self.IsObjectName = true
-			len_tmp, _, len_value = decode_tag_number_and_value(self.PDU[decodeIdx:])
-			decodeIdx += len_tmp
-
-			len_tmp, self.Name = decode_character_string(self.PDU[decodeIdx:], len_value)
-			decodeIdx += len_tmp
-
-		} else {
-
-			//fmt.Println("test")
-			//self.Length = -1
-			//return self
-
+		if lenTmp <= 0 ||
+			decodedValue > uint32(BACNET_MAX_INSTANCE) {
+			return self
 		}
+
+		self.LowLimit = int32(decodedValue)
+
+		if decodeIdx >= len(self.PDU) ||
+			!decode_is_context_tag(self.PDU[decodeIdx:], 1) {
+			return self
+		}
+
+		lenTmp, _, lenValue =
+			decode_tag_number_and_value(self.PDU[decodeIdx:])
+		decodeIdx += lenTmp
+
+		if lenTmp <= 0 ||
+			lenValue == 0 ||
+			lenValue > 4 ||
+			int(lenValue) > len(self.PDU)-decodeIdx {
+			return self
+		}
+
+		lenTmp, decodedValue =
+			decode_unsigned(self.PDU[decodeIdx:], lenValue)
+		decodeIdx += lenTmp
+
+		if lenTmp <= 0 ||
+			decodedValue > uint32(BACNET_MAX_INSTANCE) {
+			return self
+		}
+
+		self.HighLimit = int32(decodedValue)
+
+		if self.LowLimit > self.HighLimit {
+			return self
+		}
+	}
+
+	if decodeIdx >= len(self.PDU) {
+		return self
+	}
+
+	/*
+		The requested object must be specified by either:
+
+		  1. Context tag 2: object identifier
+		  2. Context tag 3: object name
+	*/
+	switch {
+	case decode_is_context_tag(self.PDU[decodeIdx:], 2):
+		self.IsObjectName = false
+
+		lenTmp, _, lenValue :=
+			decode_tag_number_and_value(self.PDU[decodeIdx:])
+		decodeIdx += lenTmp
+
+		if lenTmp <= 0 ||
+			lenValue != 4 ||
+			int(lenValue) > len(self.PDU)-decodeIdx {
+			return self
+		}
+
+		lenTmp,
+			self.Identifier.Type,
+			self.Identifier.Instance =
+			decode_object_id(self.PDU[decodeIdx:])
+		decodeIdx += lenTmp
+
+		if lenTmp <= 0 {
+			return self
+		}
+
+	case decode_is_context_tag(self.PDU[decodeIdx:], 3):
+		self.IsObjectName = true
+
+		lenTmp, _, lenValue :=
+			decode_tag_number_and_value(self.PDU[decodeIdx:])
+		decodeIdx += lenTmp
+
+		// A BACnet character string contains at least the
+		// character-set encoding byte.
+		if lenTmp <= 0 ||
+			lenValue < 1 ||
+			int(lenValue) > len(self.PDU)-decodeIdx {
+			return self
+		}
+
+		lenTmp, self.Name =
+			decode_character_string(
+				self.PDU[decodeIdx:],
+				lenValue,
+			)
+		decodeIdx += lenTmp
+
+		if lenTmp <= 0 {
+			return self
+		}
+
+	default:
+		return self
 	}
 
 	self.Length = decodeIdx
 	return self
-
 }

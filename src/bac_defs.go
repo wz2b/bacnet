@@ -13,21 +13,20 @@ func NewBACNET_ADDRESS() *BACNET_ADDRESS {
 }
 
 type BACNET_ADDRESS struct {
-				   /* mac_len = 0 is a broadcast address */
+	/* mac_len = 0 is a broadcast address */
 	Mac_len byte
-				   /* note: MAC for IP addresses uses 4 bytes for addr, 2 bytes for port */
-				   /* use de/encode_unsigned32/16 for re/storing the IP address */
-	Mac     []byte
-				   /* DNET,DLEN,DADR or SNET,SLEN,SADR */
-				   /* the following are used if the device is behind a router */
-				   /* net = 0 indicates local */
-	Net     uint16 /* BACnet network number */
-				   /* LEN = 0 denotes broadcast MAC ADR and ADR field is absent */
-				   /* LEN > 0 specifies length of ADR field */
-	Len     byte   /* length of MAC address */
-	Adr     []byte /* hwaddr (MAC) address */
+	/* note: MAC for IP addresses uses 4 bytes for addr, 2 bytes for port */
+	/* use de/encode_unsigned32/16 for re/storing the IP address */
+	Mac []byte
+	/* DNET,DLEN,DADR or SNET,SLEN,SADR */
+	/* the following are used if the device is behind a router */
+	/* net = 0 indicates local */
+	Net uint16 /* BACnet network number */
+	/* LEN = 0 denotes broadcast MAC ADR and ADR field is absent */
+	/* LEN > 0 specifies length of ADR field */
+	Len byte   /* length of MAC address */
+	Adr []byte /* hwaddr (MAC) address */
 }
-
 
 /* define a MAC address for manipulation */
 type BACNET_MAC_ADDRESS struct {
@@ -35,24 +34,27 @@ type BACNET_MAC_ADDRESS struct {
 	Adr []byte
 }
 
-/* note: with microprocessors having lots more code space than memory,
-   it might be better to have a packed encoding with a library to
-   easily access the data. */
+/*
+note: with microprocessors having lots more code space than memory,
+
+	it might be better to have a packed encoding with a library to
+	easily access the data.
+*/
 type BACNET_OBJECT_ID struct {
 	Type     uint16
 	Instance uint32
 }
 
 type BACNET_NPDU_DATA struct {
-	Protocol_version      byte
-								 /* parts of the control octet: */
+	Protocol_version byte
+	/* parts of the control octet: */
 	Data_expecting_reply  bool
-	Network_layer_message bool   /* false if APDU */
+	Network_layer_message bool /* false if APDU */
 	Priority              byte
-								 /* optional network message info */
-	Network_message_type  byte   /* optional */
-	Vendor_id             uint16 /* optional, if net message type is > 0x80 */
-	Hop_count             byte
+	/* optional network message info */
+	Network_message_type byte   /* optional */
+	Vendor_id            uint16 /* optional, if net message type is > 0x80 */
+	Hop_count            byte
 }
 
 type BACNET_ROUTER_PORT struct {
@@ -63,10 +65,11 @@ type BACNET_ROUTER_PORT struct {
 	Next     *BACNET_ROUTER_PORT /**< Point to next in linked list */
 }
 
-//todo: start find right value for these
+// todo: start find right value for these
 const MAX_APDU = 1476
 const MAX_CHARACTER_STRING_BYTES = MAX_APDU - 6
 const CHARACTER_STRING_CAPACITY = MAX_CHARACTER_STRING_BYTES - 1
+
 //todo: end   find right value for these
 
 const BACNET_STATUS_OK int = 0
