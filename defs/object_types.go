@@ -1,0 +1,65 @@
+package defs
+
+// Object types constants.
+const (
+	ObjectAnalogInput           uint16 = 0x00
+	ObjectAnalogOutput          uint16 = 0x01
+	ObjectAnalogValue           uint16 = 0x02
+	ObjectBinaryInput           uint16 = 0x03
+	ObjectBinaryOutput          uint16 = 0x04
+	ObjectBinaryValue           uint16 = 0x05
+	ObjectCalendar              uint16 = 0x06
+	ObjectCommand               uint16 = 0x07
+	ObjectDevice                uint16 = 0x08
+	ObjectEventEnrollment       uint16 = 0x09
+	ObjectFile                  uint16 = 0x0A
+	ObjectGroup                 uint16 = 0x0B
+	ObjectLoop                  uint16 = 0x0C
+	ObjectMultiStateInput       uint16 = 0x0D
+	ObjectMultiStateOutput      uint16 = 0x0E
+	ObjectNotificationClass     uint16 = 0x0F
+	ObjectProgram               uint16 = 0x10
+	ObjectSchedule              uint16 = 0x11
+	ObjectAveraging             uint16 = 0x12
+	ObjectMultiStateValue       uint16 = 0x13
+	ObjectTrendLog              uint16 = 0x14
+	ObjectLifeSafetyPoint       uint16 = 0x15
+	ObjectLifeSafetyZone        uint16 = 0x16
+	ObjectAccumulator           uint16 = 0x17
+	ObjectPulseConverter        uint16 = 0x18
+	ObjectEventLog              uint16 = 0x19
+	ObjectGlobalGroup           uint16 = 0x1A
+	ObjectTrendLogMultiple      uint16 = 0x1B
+	ObjectLoadControl           uint16 = 0x1C
+	ObjectStructuredView        uint16 = 0x1D
+	ObjectAccessDoor            uint16 = 0x1E
+	ObjectTimer                 uint16 = 0x1F
+	ObjectAccessCredential      uint16 = 0x20 // Addendum 2008-j
+	ObjectAccessPoint           uint16 = 0x21
+	ObjectAccessRights          uint16 = 0x22
+	ObjectAccessUser            uint16 = 0x23
+	ObjectAccessZone            uint16 = 0x24
+	ObjectCredentialDataInput   uint16 = 0x25 // authentication-factor-input
+	ObjectNetworkSecurity       uint16 = 0x26 // Addendum 2008-g
+	ObjectBitStringValue        uint16 = 0x27 // Addendum 2008-w
+	ObjectCharacterStringValue  uint16 = 0x28 // Addendum 2008-w
+	ObjectDatePatternValue      uint16 = 0x29 // Addendum 2008-w
+	ObjectDateValue             uint16 = 0x2A // Addendum 2008-w
+	ObjectDatetimePatternValue  uint16 = 0x2B // Addendum 2008-w
+	ObjectDatetimeValue         uint16 = 0x2C // Addendum 2008-w
+	ObjectIntegerValue          uint16 = 0x2D // Addendum 2008-w
+	ObjectLargeAnalogValue      uint16 = 0x2E // Addendum 2008-w
+	ObjectOctetStringValue      uint16 = 0x2F // Addendum 2008-w
+	ObjectPositiveIntegerValue  uint16 = 0x30 // Addendum 2008-w
+	ObjectTimePatternValue      uint16 = 0x31 // Addendum 2008-w
+	ObjectTimeValue             uint16 = 0x32 // Addendum 2008-w
+	ObjectNotificationForwarder uint16 = 0x33 // Addendum 2010-af
+	ObjectAlertEnrollment       uint16 = 0x34 // Addendum 2010-af
+	ObjectChannel               uint16 = 0x35 // Addendum 2010-aa
+	ObjectLightingOutput        uint16 = 0x36 // Addendum 2010-i
+	ObjectBinaryLightingOutput  uint16 = 0x37 // Addendum 135-2012az
+	ObjectNetworkPort           uint16 = 0x38 // Addendum 135-2012az
+	ObjectProprietaryMin        uint16 = 0x80
+	ObjectProprietaryMax        uint16 = 0x3FF
+	MaxObjectType               uint16 = 0x400
+)
