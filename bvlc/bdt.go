@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/wz2b/bacnet"
 	"github.com/wz2b/bacnet/defs"
 )
 
@@ -24,40 +23,33 @@ func (p *ReadBroadcastDistributionTable) Encode() ([]byte, error) {
 		return nil, errors.New("nil ReadBroadcastDistributionTable")
 	}
 
-	bvlc, err := p.ToBVLC()
+	b, err := p.BVLC()
 	if err != nil {
 		return nil, err
 	}
 
-	return bvlc.Encode()
+	return b.Encode()
 }
 
-func (p *ReadBroadcastDistributionTable) ToBVLC() (*BVLC, error) {
+func (p *ReadBroadcastDistributionTable) BVLC() (*BVLC, error) {
 	if p == nil {
 		return nil, errors.New("nil ReadBroadcastDistributionTable")
 	}
 
 	return &BVLC{
 		BVLLType: BVLCTypeBACnetIP,
-		Function: defs.BVLCFunction(defs.BVLCFunctionReadBroadcastDistributionTable),
-		Payload:  nil,
+		Function: defs.BVLCFunctionReadBroadcastDistributionTable,
 	}, nil
 }
 
-func (b *BVLC) IsReadBroadcastDistributionTableAck() bool {
-	return b != nil &&
-		b.Function == defs.BVLCFunction(defs.BVLCFunctionReadBroadcastDistributionTable)
-}
-
-func (b *BVLC) ToReadBroadcastDistributionTableAck() (
-	*ReadBroadcastDistributionTableAck,
-	error,
-) {
+func DecodeReadBroadcastDistributionTableAck(
+	b *BVLC,
+) (*ReadBroadcastDistributionTableAck, error) {
 	if b == nil {
 		return nil, errors.New("nil BVLC")
 	}
 
-	if b.Function != defs.BVLCFunction(defs.BVLCFunctionReadBroadcastDistributionTable) {
+	if b.Function != defs.BVLCFunctionReadBroadcastDistributionTableACK {
 		return nil, fmt.Errorf(
 			"BVLC function is %v, not Read-Broadcast-Distribution-Table-Ack",
 			b.Function,
@@ -87,7 +79,7 @@ func (b *BVLC) ToReadBroadcastDistributionTableAck() (
 	}
 
 	for offset := 0; offset < len(b.Payload); offset += 10 {
-		var address bacnet.IPAddress
+		var address IPAddress
 
 		copy(
 			address.IP[:],

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/wz2b/bacnet"
+	"github.com/wz2b/bacnet/bactypes"
 	"github.com/wz2b/bacnet/defs"
 )
 
@@ -23,17 +23,18 @@ type BVLCResult struct {
 }
 
 type ForwardedNPDU struct {
-	OriginatingAddress bacnet.IPAddress
+	OriginatingAddress IPAddress
 	NPDU               []byte
 }
 
 type RegisterForeignDevice struct {
 	TTL uint16
 }
+
 type ReadForeignDeviceTable struct{}
 
 type ForeignDeviceTableEntry struct {
-	Address       bacnet.IPAddress
+	Address       IPAddress
 	TTL           uint16
 	RemainingTime uint16
 }
@@ -43,7 +44,7 @@ type ReadForeignDeviceTableAck struct {
 }
 
 type DeleteForeignDeviceTableEntry struct {
-	Address bacnet.Address
+	Address bactypes.Address
 }
 
 type DistributeBroadcastToNetwork struct {
@@ -59,30 +60,36 @@ type OriginalBroadcastNPDU struct {
 }
 
 type BroadcastDistributionTableEntry struct {
-	Address bacnet.IPAddress
-
-	// IPv4 distribution mask used by classic BACnet/IP BDT entries.
-	Mask uint32
+	Address IPAddress
+	Mask    uint32
 }
 
-/****************************************************************************/
-func EncodeBVLC(function defs.BVLCFunction, payload []byte) ([]byte, error) {
+func EncodeBVLC(
+	function defs.BVLCFunction,
+	payload []byte,
+) ([]byte, error) {
 	length := 4 + len(payload)
 	if length > 0xffff {
-		return nil, fmt.Errorf("BVLC packet too large: %d bytes", length)
+		return nil, fmt.Errorf(
+			"BVLC packet too large: %d bytes",
+			length,
+		)
 	}
 
 	packet := make([]byte, length)
 
 	packet[0] = BVLCTypeBACnetIP
 	packet[1] = byte(function)
-	binary.BigEndian.PutUint16(packet[2:4], uint16(length))
+	binary.BigEndian.PutUint16(
+		packet[2:4],
+		uint16(length),
+	)
 	copy(packet[4:], payload)
 
 	return packet, nil
 }
 
-func DecodeBVLC(packet []byte) (*BVLC, error) {
+func Decode(packet []byte) (*BVLC, error) {
 	if len(packet) < 4 {
 		return nil, fmt.Errorf(
 			"BVLC packet too short: %d bytes",
@@ -107,20 +114,11 @@ func DecodeBVLC(packet []byte) (*BVLC, error) {
 		)
 	}
 
-	function := defs.BVLCFunction(packet[1])
-
-	if function > defs.BVLCFunction(defs.BVLCFunctionOriginalBroadcastNPDU) {
-		return nil, fmt.Errorf(
-			"unknown BVLC function: 0x%02X",
-			byte(function),
-		)
-	}
-
 	return &BVLC{
 		BVLLType: packet[0],
-		Function: function,
+		Function: defs.BVLCFunction(packet[1]),
 		Length:   length,
-		Payload:  packet[4:],
+		Payload:  append([]byte(nil), packet[4:]...),
 	}, nil
 }
 
@@ -129,26 +127,18 @@ func (b *BVLC) Encode() ([]byte, error) {
 		return nil, errors.New("nil BVLC")
 	}
 
-	length := 4 + len(b.Payload)
-	if length > 0xffff {
-		return nil, fmt.Errorf("BVLC packet too large: %d bytes", length)
-	}
-
-	packet := make([]byte, length)
-
-	packet[0] = b.BVLLType
-	packet[1] = byte(b.Function)
-	binary.BigEndian.PutUint16(packet[2:4], uint16(length))
-	copy(packet[4:], b.Payload)
-
-	return packet, nil
+	return EncodeBVLC(
+		b.Function,
+		b.Payload,
+	)
 }
-func (b *BVLC) ToResult() (*BVLCResult, error) {
+
+func DecodeResult(b *BVLC) (*BVLCResult, error) {
 	if b == nil {
 		return nil, errors.New("nil BVLC")
 	}
 
-	if b.Function != defs.BVLCFunction(defs.BVLCFunctionResult) {
+	if b.Function != defs.BVLCFunctionResult {
 		return nil, fmt.Errorf(
 			"BVLC function is %v, not BVLC-Result",
 			b.Function,
@@ -167,28 +157,20 @@ func (b *BVLC) ToResult() (*BVLCResult, error) {
 	}, nil
 }
 
-func (b *BVLC) IsForwardedNPDU() bool {
-	return b != nil &&
-		b.Function == defs.BVLCFunction(defs.BVLCFunctionForwardedNPDU)
-}
-
-func (b *BVLC) ToForwardedNPDU() (*ForwardedNPDU, error) {
+func DecodeForwardedNPDU(
+	b *BVLC,
+) (*ForwardedNPDU, error) {
 	if b == nil {
 		return nil, errors.New("nil BVLC")
 	}
 
-	if b.Function != defs.BVLCFunction(defs.BVLCFunctionForwardedNPDU) {
+	if b.Function != defs.BVLCFunctionForwardedNPDU {
 		return nil, fmt.Errorf(
 			"BVLC function is %v, not Forwarded-NPDU",
 			b.Function,
 		)
 	}
 
-	// Forwarded-NPDU payload:
-	//
-	// 4 bytes originating IPv4 address
-	// 2 bytes originating UDP port
-	// remaining bytes NPDU
 	if len(b.Payload) < 6 {
 		return nil, fmt.Errorf(
 			"invalid Forwarded-NPDU payload length: %d",
@@ -196,12 +178,8 @@ func (b *BVLC) ToForwardedNPDU() (*ForwardedNPDU, error) {
 		)
 	}
 
-	var address bacnet.IPAddress
-
-	copy(
-		address.IP[:],
-		b.Payload[0:4],
-	)
+	var address IPAddress
+	copy(address.IP[:], b.Payload[0:4])
 
 	address.Port = binary.BigEndian.Uint16(
 		b.Payload[4:6],
@@ -209,6 +187,9 @@ func (b *BVLC) ToForwardedNPDU() (*ForwardedNPDU, error) {
 
 	return &ForwardedNPDU{
 		OriginatingAddress: address,
-		NPDU:               b.Payload[6:],
+		NPDU: append(
+			[]byte(nil),
+			b.Payload[6:]...,
+		),
 	}, nil
 }

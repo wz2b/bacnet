@@ -1,6 +1,4 @@
-// Package bacnet
-// File bac_property.go
-package bacnet
+package bactypes
 
 type PropertyReference struct {
 	PropertyIdentifier uint32

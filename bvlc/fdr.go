@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/wz2b/bacnet"
 	"github.com/wz2b/bacnet/defs"
 )
 
@@ -127,7 +126,7 @@ func DecodeReadForeignDeviceTableAck(
 	}
 
 	for offset := 0; offset < len(b.Payload); offset += entryLength {
-		var address bacnet.IPAddress
+		var address IPAddress
 
 		copy(
 			address.IP[:],

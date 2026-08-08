@@ -1,27 +1,69 @@
 package npdu
 
 import (
+	"bytes"
 	"testing"
 )
 
 func TestNPDUEncodingAndDecoding(t *testing.T) {
-	encodedService := &NPDU{Length: 0, PDU: make([]byte, 50)}
-	decodedService := &NPDU{Length: 0}
+	original := &NPDU{
+		ProtocolVersion: 0x01,
+		Priority:        2,
+		ExpectingReply:  true,
+		NetworkLayer:    false,
+		PDU: []byte{
+			0x10, 0x08,
+			0x0A, 0x03, 0xE8,
+		},
+	}
 
-	encodedService.Encode()
+	wire, err := original.Encode()
+	if err != nil {
+		t.Fatalf("Encode() error: %v", err)
+	}
 
-	decodedService.PDU = encodedService.PDU
-	decodedService.Decode()
+	decoded, err := Decode(wire)
+	if err != nil {
+		t.Fatalf("Decode() error: %v", err)
+	}
 
-	if encodedService.Length != decodedService.Length {
-		t.Errorf("Length mismatch: %d %d", encodedService.Length, decodedService.Length)
-	} else if encodedService.Priority != decodedService.Priority {
-		t.Errorf("Priority mismatch: %d %d", encodedService.Priority, decodedService.Priority)
-	} else if encodedService.ProtocolVersion != decodedService.ProtocolVersion {
-		t.Errorf("ProtocolVersion mismatch: %d %d", encodedService.ProtocolVersion, decodedService.ProtocolVersion)
-	} else if encodedService.NetworkLayer != decodedService.NetworkLayer {
-		t.Errorf("NetworkLayer mismatch: %t %t", encodedService.NetworkLayer, decodedService.NetworkLayer)
-	} else if encodedService.HopCount != decodedService.HopCount {
-		t.Errorf("HopCount mismatch: %d %d", encodedService.HopCount, decodedService.HopCount)
+	if decoded.ProtocolVersion != original.ProtocolVersion {
+		t.Errorf(
+			"ProtocolVersion: got %d, want %d",
+			decoded.ProtocolVersion,
+			original.ProtocolVersion,
+		)
+	}
+
+	if decoded.Priority != original.Priority {
+		t.Errorf(
+			"Priority: got %d, want %d",
+			decoded.Priority,
+			original.Priority,
+		)
+	}
+
+	if decoded.ExpectingReply != original.ExpectingReply {
+		t.Errorf(
+			"ExpectingReply: got %t, want %t",
+			decoded.ExpectingReply,
+			original.ExpectingReply,
+		)
+	}
+
+	if decoded.NetworkLayer != original.NetworkLayer {
+		t.Errorf(
+			"NetworkLayer: got %t, want %t",
+			decoded.NetworkLayer,
+			original.NetworkLayer,
+		)
+	}
+
+	if !bytes.Equal(decoded.Payload(), original.PDU) {
+		t.Errorf(
+			"Payload mismatch:\n got: % X\nwant: % X",
+			decoded.Payload(),
+			original.PDU,
+		)
 	}
 }

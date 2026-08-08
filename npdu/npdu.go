@@ -1,57 +1,30 @@
 package npdu
 
 import (
-	"github.com/wz2b/bacnet"
+	"encoding/binary"
+	"errors"
+	"fmt"
+
+	"github.com/wz2b/bacnet/bactypes"
 	"github.com/wz2b/bacnet/codec"
 	"github.com/wz2b/bacnet/defs"
 )
 
-type NpduData struct {
-	Protocol_version byte
-	/* parts of the control octet: */
-	Data_expecting_reply  bool
-	Network_layer_message bool /* false if APDU */
-	Priority              byte
-	/* optional network message info */
-	Network_message_type byte   /* optional */
-	Vendor_id            uint16 /* optional, if net message type is > 0x80 */
-	Hop_count            byte
-}
-
-func NewNPDU(pdu []byte, dest, src *bacnet.Address, expectReply bool, priority byte) *NPDU {
-	if pdu == nil {
-		pdu = make([]byte, 50)
-	}
-	npdu := &NPDU{
-		PDU:             pdu,
-		Dest:            dest,
-		Source:          src,
-		ExpectingReply:  expectReply,
-		Priority:        priority,
-		ProtocolVersion: 0x01,
-		NetworkLayer:    false,
-		HopCount:        defs.HopCountDefault,
-	}
-	return npdu
-}
-
-func NewNetworkLayerNPDU(pdu []byte, dest, src *bacnet.Address, expectReply bool, priority byte) *NPDU {
-	npdu := NewNPDU(pdu, dest, src, expectReply, priority)
-	npdu.NetworkLayer = true
-	return npdu
-}
-
 type NPDU struct {
-	PDU             []byte
 	ProtocolVersion byte
 	ExpectingReply  bool
 	NetworkLayer    bool
 	Priority        byte
-	MessageType     byte
-	VendorId        uint16
-	HopCount        byte
-	Dest            *bacnet.Address
-	Source          *bacnet.Address
+
+	MessageType byte
+	VendorID    uint16
+	HopCount    byte
+
+	Dest   *bactypes.Address
+	Source *bactypes.Address
+
+	// PDU contains the complete encoded NPDU.
+	PDU []byte
 
 	// Length is the offset within PDU where the NPDU payload begins.
 	//
@@ -61,171 +34,368 @@ type NPDU struct {
 	Length int
 }
 
-func (self *NPDU) Encode() *NPDU {
-	var encodeIdx int = 0
-	var i byte = 0
-
-	encodeIdx = 2
-	self.PDU[0] = self.ProtocolVersion
-	self.PDU[1] = 0
-	if self.NetworkLayer {
-		self.PDU[1] |= codec.BIT7
+func NewNPDU(
+	payload []byte,
+	dest, src *bactypes.Address,
+	expectReply bool,
+	priority byte,
+) *NPDU {
+	return &NPDU{
+		PDU:             append([]byte(nil), payload...),
+		Dest:            dest,
+		Source:          src,
+		ExpectingReply:  expectReply,
+		Priority:        priority,
+		ProtocolVersion: 0x01,
+		HopCount:        defs.HopCountDefault,
 	}
-	if self.Dest != nil && self.Dest.Net != 0 {
-		self.PDU[1] |= codec.BIT5
-	}
-	if self.Source != nil && self.Source.Net != 0 && self.Source.Len != 0 {
-		self.PDU[1] |= codec.BIT3
-	}
-	if self.ExpectingReply {
-		self.PDU[1] |= codec.BIT2
-	}
-	self.PDU[1] |= (self.Priority & 0x03)
-	if self.Dest != nil && self.Dest.Net != 0 {
-		encodeIdx += codec.EncodeUnsigned16(self.PDU[encodeIdx:], self.Dest.Net)
-		self.PDU[encodeIdx] = self.Dest.Len
-		encodeIdx++
-		if self.Dest.Len != 0 {
-			for i = 0; i < self.Dest.Len; i, encodeIdx = i+1, encodeIdx+1 {
-				self.PDU[encodeIdx] = self.Dest.Adr[i]
-			}
-		}
-	}
-	if self.Source != nil && self.Source.Net != 0 && self.Source.Len != 0 {
-		encodeIdx += codec.EncodeUnsigned16(self.PDU[encodeIdx:], self.Source.Net)
-		self.PDU[encodeIdx] = self.Source.Len
-		encodeIdx++
-		if self.Source.Len != 0 {
-			for i = 0; i < self.Source.Len; i, encodeIdx = i+1, encodeIdx+1 {
-				self.PDU[encodeIdx] = self.Source.Adr[i]
-			}
-		}
-	}
-	if self.Dest != nil && self.Dest.Net != 0 {
-		self.PDU[encodeIdx] = self.HopCount
-		encodeIdx++
-	}
-	if self.NetworkLayer {
-		self.PDU[encodeIdx] = self.MessageType
-		encodeIdx++
-		if self.MessageType >= 0x80 {
-			encodeIdx += codec.EncodeUnsigned16(self.PDU[encodeIdx:], self.VendorId)
-		}
-	}
-
-	self.Length = encodeIdx
-
-	return self
-
 }
 
-func (self *NPDU) Decode() *NPDU {
-	var len_pdu int = 0
-	var len_tmp = 0
-	var i byte = 0
-	var src_net uint16 = 0
-	var dest_net uint16 = 0
-	var address_len byte = 0
-	var mac_octet byte = 0
+func NewNetworkLayerNPDU(
+	payload []byte,
+	dest, src *bactypes.Address,
+	expectReply bool,
+	priority byte,
+) *NPDU {
+	n := NewNPDU(
+		payload,
+		dest,
+		src,
+		expectReply,
+		priority,
+	)
 
-	if self.Dest == nil {
-		self.Dest = bacnet.NewAddress()
-	}
-	if self.Source == nil {
-		self.Source = bacnet.NewAddress()
-	}
+	n.NetworkLayer = true
 
-	self.ProtocolVersion = self.PDU[0]
-	if self.PDU[1]&codec.BIT7 != 0 {
-		self.NetworkLayer = true
-	} else {
-		self.NetworkLayer = false
-	}
-	if self.PDU[1]&codec.BIT2 != 0 {
-		self.ExpectingReply = true
-	} else {
-		self.ExpectingReply = false
-	}
-	self.Priority = self.PDU[1] & 0x03
-	len_pdu = 2
-	if self.PDU[1]&codec.BIT5 != 0 {
-		len_tmp, dest_net = codec.DecodeUnsigned16(self.PDU[len_pdu:])
-		len_pdu += len_tmp
-		address_len = self.PDU[len_pdu]
-		len_pdu++
-		if self.Dest != nil {
-			self.Dest.Net = dest_net
-			self.Dest.Len = address_len
-		}
-		if address_len != 0 {
-			if address_len > bacnet.MAX_MAC_LEN {
-				panic("Dest address_len greater than MAX_MAC_LEN")
-			}
-			for i = 0; i < address_len; len_pdu, i = len_pdu+1, i+1 {
-				mac_octet = self.PDU[len_pdu]
-				if self.Dest != nil {
-					self.Dest.Adr[i] = mac_octet
-				}
-			}
-		}
-	} else if self.Dest != nil {
-		self.Dest.Net = 0
-		self.Dest.Len = 0
-		for i = 0; i < bacnet.MAX_MAC_LEN; i++ {
-			self.Dest.Adr[i] = 0
-		}
-	}
-	if self.PDU[1]&codec.BIT3 != 0 {
-		len_tmp, src_net = codec.DecodeUnsigned16(self.PDU[len_pdu:])
-		len_pdu += len_tmp
-		address_len = self.PDU[len_pdu]
-		len_pdu++
-		if self.Source != nil {
-			self.Source.Net = src_net
-			self.Source.Len = address_len
-		}
-		if address_len != 0 {
-			if address_len > bacnet.MAX_MAC_LEN {
-				panic("Source address_len greater than MAX_MAC_LEN")
-			}
-			for i = 0; i < address_len; len_pdu, i = len_pdu+1, i+1 {
-				mac_octet = self.PDU[len_pdu]
-				if self.Source != nil {
-					self.Source.Adr[i] = mac_octet
-				}
-			}
-		}
-	} else if self.Source != nil {
-		if self.Source.Net != defs.BroadcastNetwork {
-			self.Source.Net = 0
-		}
-		self.Source.Len = 0
-		for i = 0; i < bacnet.MAX_MAC_LEN; i++ {
-			self.Source.Adr[i] = 0
-		}
-	}
-	if dest_net != 0 {
-		self.HopCount = self.PDU[len_pdu]
-		len_pdu++
-	} else {
-		self.HopCount = 0
-	}
-	if self.NetworkLayer {
-		self.MessageType = self.PDU[len_pdu]
-		len_pdu++
-		if self.MessageType >= 0x80 {
-			len_tmp, self.VendorId = codec.DecodeUnsigned16(self.PDU[len_pdu:])
-			len_pdu += len_tmp
-		}
-	} else {
-		/* Since self.Network_layer_message is false,
-		 * it doesn't much matter what we set here this is safe: */
-		//self.Network_message_type = NetworkMessageInvalid
+	return n
+}
+
+func (n *NPDU) Encode() ([]byte, error) {
+	if n == nil {
+		return nil, errors.New("nil NPDU")
 	}
 
-	self.Length = len_pdu
+	if n.Priority > 3 {
+		return nil, fmt.Errorf(
+			"invalid NPDU priority: %d",
+			n.Priority,
+		)
+	}
 
-	return self
+	control := n.Priority & 0x03
+
+	if n.NetworkLayer {
+		control |= codec.BIT7
+	}
+
+	if n.Dest != nil && n.Dest.Net != 0 {
+		control |= codec.BIT5
+	}
+
+	if n.Source != nil &&
+		n.Source.Net != 0 &&
+		n.Source.Len != 0 {
+		control |= codec.BIT3
+	}
+
+	if n.ExpectingReply {
+		control |= codec.BIT2
+	}
+
+	header := make([]byte, 0, 32)
+
+	header = append(
+		header,
+		n.ProtocolVersion,
+		control,
+	)
+
+	if n.Dest != nil && n.Dest.Net != 0 {
+		if int(n.Dest.Len) > len(n.Dest.Adr) {
+			return nil, fmt.Errorf(
+				"destination address length %d exceeds available address bytes %d",
+				n.Dest.Len,
+				len(n.Dest.Adr),
+			)
+		}
+
+		var network [2]byte
+		binary.BigEndian.PutUint16(
+			network[:],
+			n.Dest.Net,
+		)
+
+		header = append(
+			header,
+			network[:]...,
+		)
+
+		header = append(
+			header,
+			n.Dest.Len,
+		)
+
+		header = append(
+			header,
+			n.Dest.Adr[:n.Dest.Len]...,
+		)
+	}
+
+	if n.Source != nil &&
+		n.Source.Net != 0 &&
+		n.Source.Len != 0 {
+		if int(n.Source.Len) > len(n.Source.Adr) {
+			return nil, fmt.Errorf(
+				"source address length %d exceeds available address bytes %d",
+				n.Source.Len,
+				len(n.Source.Adr),
+			)
+		}
+
+		var network [2]byte
+		binary.BigEndian.PutUint16(
+			network[:],
+			n.Source.Net,
+		)
+
+		header = append(
+			header,
+			network[:]...,
+		)
+
+		header = append(
+			header,
+			n.Source.Len,
+		)
+
+		header = append(
+			header,
+			n.Source.Adr[:n.Source.Len]...,
+		)
+	}
+
+	if n.Dest != nil && n.Dest.Net != 0 {
+		header = append(
+			header,
+			n.HopCount,
+		)
+	}
+
+	if n.NetworkLayer {
+		header = append(
+			header,
+			n.MessageType,
+		)
+
+		if n.MessageType >= 0x80 {
+			var vendor [2]byte
+			binary.BigEndian.PutUint16(
+				vendor[:],
+				n.VendorID,
+			)
+
+			header = append(
+				header,
+				vendor[:]...,
+			)
+		}
+	}
+
+	result := make(
+		[]byte,
+		0,
+		len(header)+len(n.PDU),
+	)
+
+	result = append(
+		result,
+		header...,
+	)
+
+	n.Length = len(header)
+
+	result = append(
+		result,
+		n.PDU...,
+	)
+
+	return result, nil
+}
+
+func Decode(data []byte) (*NPDU, error) {
+	if len(data) < 2 {
+		return nil, fmt.Errorf(
+			"NPDU too short: %d bytes",
+			len(data),
+		)
+	}
+
+	result := &NPDU{
+		PDU: append([]byte(nil), data...),
+	}
+
+	result.ProtocolVersion = data[0]
+
+	if result.ProtocolVersion != 0x01 {
+		return nil, fmt.Errorf(
+			"unsupported NPDU protocol version: 0x%02X",
+			result.ProtocolVersion,
+		)
+	}
+
+	control := data[1]
+
+	result.NetworkLayer =
+		control&codec.BIT7 != 0
+
+	result.ExpectingReply =
+		control&codec.BIT2 != 0
+
+	result.Priority =
+		control & 0x03
+
+	offset := 2
+
+	//
+	// Destination
+	//
+
+	if control&codec.BIT5 != 0 {
+		if len(data)-offset < 3 {
+			return nil, errors.New(
+				"truncated NPDU destination address",
+			)
+		}
+
+		network := binary.BigEndian.Uint16(
+			data[offset : offset+2],
+		)
+		offset += 2
+
+		addressLength := int(data[offset])
+		offset++
+
+		if addressLength > bactypes.MAX_MAC_LEN {
+			return nil, fmt.Errorf(
+				"destination address length %d exceeds maximum %d",
+				addressLength,
+				bactypes.MAX_MAC_LEN,
+			)
+		}
+
+		if len(data)-offset < addressLength {
+			return nil, errors.New(
+				"truncated NPDU destination address",
+			)
+		}
+
+		dest := bactypes.NewAddress()
+		dest.Net = network
+		dest.Len = byte(addressLength)
+
+		copy(
+			dest.Adr,
+			data[offset:offset+addressLength],
+		)
+
+		offset += addressLength
+
+		result.Dest = dest
+	}
+
+	//
+	// Source
+	//
+
+	if control&codec.BIT3 != 0 {
+		if len(data)-offset < 3 {
+			return nil, errors.New(
+				"truncated NPDU source address",
+			)
+		}
+
+		network := binary.BigEndian.Uint16(
+			data[offset : offset+2],
+		)
+		offset += 2
+
+		addressLength := int(data[offset])
+		offset++
+
+		if addressLength > bactypes.MAX_MAC_LEN {
+			return nil, fmt.Errorf(
+				"source address length %d exceeds maximum %d",
+				addressLength,
+				bactypes.MAX_MAC_LEN,
+			)
+		}
+
+		if len(data)-offset < addressLength {
+			return nil, errors.New(
+				"truncated NPDU source address",
+			)
+		}
+
+		source := bactypes.NewAddress()
+		source.Net = network
+		source.Len = byte(addressLength)
+
+		copy(
+			source.Adr,
+			data[offset:offset+addressLength],
+		)
+
+		offset += addressLength
+
+		result.Source = source
+	}
+
+	//
+	// Hop count is present whenever destination information is present.
+	//
+
+	if control&codec.BIT5 != 0 {
+		if offset >= len(data) {
+			return nil, errors.New(
+				"truncated NPDU hop count",
+			)
+		}
+
+		result.HopCount = data[offset]
+		offset++
+	}
+
+	//
+	// Network-layer message information
+	//
+
+	if result.NetworkLayer {
+		if offset >= len(data) {
+			return nil, errors.New(
+				"truncated NPDU network message type",
+			)
+		}
+
+		result.MessageType = data[offset]
+		offset++
+
+		if result.MessageType >= 0x80 {
+			if len(data)-offset < 2 {
+				return nil, errors.New(
+					"truncated NPDU vendor ID",
+				)
+			}
+
+			result.VendorID = binary.BigEndian.Uint16(
+				data[offset : offset+2],
+			)
+			offset += 2
+		}
+	}
+
+	result.Length = offset
+
+	return result, nil
 }
 
 func (n *NPDU) Payload() []byte {
@@ -233,7 +403,8 @@ func (n *NPDU) Payload() []byte {
 		return nil
 	}
 
-	if n.Length < 0 || n.Length > len(n.PDU) {
+	if n.Length < 0 ||
+		n.Length > len(n.PDU) {
 		return nil
 	}
 

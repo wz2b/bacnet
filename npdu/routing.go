@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/wz2b/bacnet"
+	"github.com/wz2b/bacnet/bactypes"
 	"github.com/wz2b/bacnet/defs"
 )
 
@@ -134,11 +134,11 @@ func NewRoutingTableInitRequest(count int) (*RoutingTableRequest, error) {
 	}, nil
 }
 
-func (r *RoutingTableRequest) ToNPDU(dest *bacnet.Address) (*NPDU, error) {
+func (r *RoutingTableRequest) ToNPDU(dest *bactypes.Address) (*NPDU, error) {
 	return r.ToNPDUDest(dest)
 }
 
-func (r *RoutingTableRequest) ToNPDUDest(dest *bacnet.Address) (*NPDU, error) {
+func (r *RoutingTableRequest) ToNPDUDest(dest *bactypes.Address) (*NPDU, error) {
 	if r == nil {
 		return nil, fmt.Errorf("nil routing table request")
 	}
@@ -250,11 +250,11 @@ func (r *RoutingTableRequest) ToNPDUDest(dest *bacnet.Address) (*NPDU, error) {
 	return npdu, nil
 }
 
-func (r *RoutingTableRequest) Encode() (*NPDU, error) {
-	npdu, err := r.ToNPDU(nil)
+func (r *RoutingTableRequest) Encode() ([]byte, error) {
+	n, err := r.ToNPDU(nil)
 	if err != nil {
 		return nil, err
 	}
 
-	return npdu.Encode(), nil
+	return n.Encode()
 }

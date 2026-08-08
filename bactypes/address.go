@@ -1,4 +1,4 @@
-package bacnet
+package bactypes
 
 import (
 	"fmt"
@@ -32,26 +32,9 @@ type Address struct {
 }
 
 /* define a MAC address for manipulation */
-type BacnetMacAddress struct {
+type MACAddress struct {
 	Len byte /* length of MAC address */
 	Adr []byte
-}
-
-/* Define a BACNET IP Address */
-type IPAddress struct {
-	IP   [4]byte
-	Port uint16
-}
-
-func (a IPAddress) String() string {
-	return fmt.Sprintf(
-		"%d.%d.%d.%d:%d",
-		a.IP[0],
-		a.IP[1],
-		a.IP[2],
-		a.IP[3],
-		a.Port,
-	)
 }
 
 func ParseAddress(s string) (*Address, error) {
