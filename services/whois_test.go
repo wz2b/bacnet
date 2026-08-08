@@ -8,7 +8,11 @@ import (
 	"github.com/wz2b/bacnet/defs"
 )
 
-func checkWhoIsEncoding(t *testing.T, lowLimit, highLimit int32) {
+func checkWhoIsEncoding(
+	t *testing.T,
+	lowLimit *uint32,
+	highLimit *uint32,
+) {
 	t.Helper()
 
 	original := WhoIs{
@@ -19,47 +23,67 @@ func checkWhoIsEncoding(t *testing.T, lowLimit, highLimit int32) {
 	data := original.APDU()
 
 	decoded, err := DecodeWhoIs(&apdu.APDU{
-		Type:          defs.PDUTypeUnconfirmedServiceRequest,
-		ServiceChoice: defs.ServiceUnconfirmedWhoIs,
-		Data:          data[2:],
+		Type:                     defs.PDUTypeUnconfirmedServiceRequest,
+		UnconfirmedServiceChoice: defs.ServiceUnconfirmedWhoIs,
+		Data:                     data[2:],
 	})
 	if err != nil {
 		t.Fatalf("DecodeWhoIs() error: %v", err)
 	}
 
-	if decoded.LowLimit != original.LowLimit {
+	if lowLimit == nil {
+		if decoded.LowLimit != nil {
+			t.Errorf(
+				"LowLimit mismatch: got %d, want nil",
+				*decoded.LowLimit,
+			)
+		}
+	} else if decoded.LowLimit == nil ||
+		*decoded.LowLimit != *lowLimit {
 		t.Errorf(
-			"LowLimit mismatch: got %d, want %d",
+			"LowLimit mismatch: got %v, want %v",
 			decoded.LowLimit,
-			original.LowLimit,
+			lowLimit,
 		)
 	}
 
-	if decoded.HighLimit != original.HighLimit {
+	if highLimit == nil {
+		if decoded.HighLimit != nil {
+			t.Errorf(
+				"HighLimit mismatch: got %d, want nil",
+				*decoded.HighLimit,
+			)
+		}
+	} else if decoded.HighLimit == nil ||
+		*decoded.HighLimit != *highLimit {
 		t.Errorf(
-			"HighLimit mismatch: got %d, want %d",
+			"HighLimit mismatch: got %v, want %v",
 			decoded.HighLimit,
-			original.HighLimit,
+			highLimit,
 		)
 	}
 }
 
 func TestWhoIsEncodingAndDecoding(t *testing.T) {
-	checkWhoIsEncoding(t, -1, -1)
+	checkWhoIsEncoding(t, nil, nil)
 
-	step := int32(defs.MaxInstance / 4)
+	step := uint32(defs.MaxInstance / 4)
 
-	for lowLimit := int32(0); lowLimit <= defs.MaxInstance; lowLimit += step {
-		for highLimit := int32(0); highLimit <= defs.MaxInstance; highLimit += step {
-			checkWhoIsEncoding(t, lowLimit, highLimit)
+	for lowLimit := uint32(0); lowLimit <= uint32(defs.MaxInstance); lowLimit += step {
+		for highLimit := uint32(0); highLimit <= uint32(defs.MaxInstance); highLimit += step {
+			checkWhoIsEncoding(
+				t,
+				uint32Ptr(lowLimit),
+				uint32Ptr(highLimit),
+			)
 		}
 	}
 }
 
 func TestWhoIsEncodingWithoutLimits(t *testing.T) {
 	msg := WhoIs{
-		LowLimit:  -1,
-		HighLimit: -1,
+		LowLimit:  nil,
+		HighLimit: nil,
 	}
 
 	got := msg.APDU()
@@ -94,25 +118,25 @@ func TestWhoIsDecodingWithoutLimits(t *testing.T) {
 		t.Fatalf("DecodeWhoIs() error: %v", err)
 	}
 
-	if decoded.LowLimit != -1 {
+	if decoded.LowLimit != nil {
 		t.Errorf(
-			"LowLimit: got %d, want -1",
-			decoded.LowLimit,
+			"LowLimit: got %d, want nil",
+			*decoded.LowLimit,
 		)
 	}
 
-	if decoded.HighLimit != -1 {
+	if decoded.HighLimit != nil {
 		t.Errorf(
-			"HighLimit: got %d, want -1",
-			decoded.HighLimit,
+			"HighLimit: got %d, want nil",
+			*decoded.HighLimit,
 		)
 	}
 }
 
 func TestWhoIsEncodingWithLimits(t *testing.T) {
 	msg := WhoIs{
-		LowLimit:  1000,
-		HighLimit: 2000,
+		LowLimit:  uint32Ptr(1000),
+		HighLimit: uint32Ptr(2000),
 	}
 
 	got := msg.APDU()
@@ -122,11 +146,9 @@ func TestWhoIsEncodingWithLimits(t *testing.T) {
 		0x10, 0x08,
 
 		// [0] deviceInstanceRangeLowLimit = 1000
-		// context tag 0, length 2
 		0x0A, 0x03, 0xE8,
 
 		// [1] deviceInstanceRangeHighLimit = 2000
-		// context tag 1, length 2
 		0x1A, 0x07, 0xD0,
 	}
 
@@ -161,19 +183,19 @@ func TestWhoIsDecodingWithLimits(t *testing.T) {
 		t.Fatalf("DecodeWhoIs() error: %v", err)
 	}
 
-	if decoded.LowLimit != 1000 {
+	if decoded.LowLimit == nil ||
+		*decoded.LowLimit != 1000 {
 		t.Errorf(
-			"LowLimit: got %d, want %d",
+			"LowLimit: got %v, want 1000",
 			decoded.LowLimit,
-			1000,
 		)
 	}
 
-	if decoded.HighLimit != 2000 {
+	if decoded.HighLimit == nil ||
+		*decoded.HighLimit != 2000 {
 		t.Errorf(
-			"HighLimit: got %d, want %d",
+			"HighLimit: got %v, want 2000",
 			decoded.HighLimit,
-			2000,
 		)
 	}
 }

@@ -59,9 +59,9 @@ func (a ACKAlarm) APDU() apdu.APDU {
 	)
 
 	return apdu.APDU{
-		Type:          defs.PDUTypeConfirmedServiceRequest,
-		ServiceChoice: defs.ServiceConfirmedAcknowledgeAlarm,
-		Data:          data[:encodeIdx],
+		Type:                   defs.PDUTypeConfirmedServiceRequest,
+		ConfirmedServiceChoice: defs.ServiceConfirmedAcknowledgeAlarm,
+		Data:                   data[:encodeIdx],
 	}
 }
 
@@ -70,7 +70,7 @@ func DecodeACKAlarm(a *apdu.APDU) (*ACKAlarm, error) {
 		return nil, fmt.Errorf("AcknowledgeAlarm requires a confirmed service request APDU")
 	}
 
-	if a.ServiceChoice != defs.ServiceConfirmedAcknowledgeAlarm {
+	if a.ConfirmedServiceChoice != defs.ServiceConfirmedAcknowledgeAlarm {
 		return nil, fmt.Errorf("APDU is not an AcknowledgeAlarm request")
 	}
 

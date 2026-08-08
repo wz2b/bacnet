@@ -39,10 +39,10 @@ func EncodeApplicationTaggedObjectID(
 
 /* from clause 20.2.14 Encoding of an Object Identifier Value */
 /* returns the number of apdu bytes consumed */
-func DecodeObjectID(apdu []byte) (int, bactypes.ObjectType, uint32) {
+func DecodeObjectID(apdu []byte) (int, defs.ObjectType, uint32) {
 	length, value := DecodeUnsigned32(apdu)
 
-	objectType := bactypes.ObjectType(
+	objectType := defs.ObjectType(
 		(value >> uint32(defs.InstanceBits)) &
 			uint32(defs.MaxObject),
 	)
@@ -57,7 +57,7 @@ func DecodeObjectID(apdu []byte) (int, bactypes.ObjectType, uint32) {
 /* returns the number of apdu bytes consumed */
 func EncodeContextTaggedObjectID(
 	apdu []byte,
-	tagNumber byte,
+	tagNumber defs.ApplicationTagType,
 	objectID bactypes.ObjectID,
 ) int {
 	length := EncodeTag(

@@ -1,8 +1,10 @@
 package defs
 
+type NotificationType byte
+
 // Notify constants.
 const (
-	NotifyAlarm byte = 0x00
-	NotifyEvent byte = 0x01
-	NotifyACKNotification byte = 0x02
+	NotifyAlarm           NotificationType = 0x00
+	NotifyEvent           NotificationType = 0x01
+	NotifyACKNotification NotificationType = 0x02
 )

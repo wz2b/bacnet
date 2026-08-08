@@ -1,39 +1,41 @@
 package defs
 
-// Lighting constants.
+type LightingOperation uint16
+
 const (
-	LightsNone uint16 = 0x00
-	LightsFadeTo uint16 = 0x01
-	LightsRampTo uint16 = 0x02
-	LightsStepUp uint16 = 0x03
-	LightsStepDown uint16 = 0x04
-	LightsStepOn uint16 = 0x05
-	LightsStepOff uint16 = 0x06
-	LightsWarn uint16 = 0x07
-	LightsWarnOff uint16 = 0x08
-	LightsWarnRelinquish uint16 = 0x09
-	LightsStop uint16 = 0x0A
-	MaxLightingOperation uint16 = 0x0B
-	LightsProprietaryFirst uint16 = 0x100
-	LightsProprietaryLast uint16 = 0xFFFF
+	LightingOperationNone           LightingOperation = 0x00
+	LightingOperationFadeTo         LightingOperation = 0x01
+	LightingOperationRampTo         LightingOperation = 0x02
+	LightingOperationStepUp         LightingOperation = 0x03
+	LightingOperationStepDown       LightingOperation = 0x04
+	LightingOperationStepOn         LightingOperation = 0x05
+	LightingOperationStepOff        LightingOperation = 0x06
+	LightingOperationWarn           LightingOperation = 0x07
+	LightingOperationWarnOff        LightingOperation = 0x08
+	LightingOperationWarnRelinquish LightingOperation = 0x09
+	LightingOperationStop           LightingOperation = 0x0A
+
+	LightingOperationProprietaryFirst LightingOperation = 0x100
+	LightingOperationProprietaryLast  LightingOperation = 0xFFFF
 )
 
-// Lighting constants.
+type LightingInProgress byte
+
 const (
-	LightingIdle byte = 0x00
-	LightingFadeActive byte = 0x01
-	LightingRampActive byte = 0x02
-	LightingNotControlled byte = 0x03
-	LightingOther byte = 0x04
-	MaxLightingInProgress byte = 0x05
+	LightingInProgressIdle          LightingInProgress = 0x00
+	LightingInProgressFadeActive    LightingInProgress = 0x01
+	LightingInProgressRampActive    LightingInProgress = 0x02
+	LightingInProgressNotControlled LightingInProgress = 0x03
+	LightingInProgressOther         LightingInProgress = 0x04
 )
 
-// Lighting constants.
+type LightingTransition byte
+
 const (
-	LightingTransitionIdle byte = 0x00
-	LightingTransitionFade byte = 0x01
-	LightingTransitionRamp byte = 0x02
-	MaxLightingTransition byte = 0x03
-	LightingTransitionProprietaryFirst byte = 0x40
-	LightingTransitionProprietaryLast byte = 0xFF
+	LightingTransitionIdle LightingTransition = 0x00
+	LightingTransitionFade LightingTransition = 0x01
+	LightingTransitionRamp LightingTransition = 0x02
+
+	LightingTransitionProprietaryFirst LightingTransition = 0x40
+	LightingTransitionProprietaryLast  LightingTransition = 0xFF
 )

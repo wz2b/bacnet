@@ -11,7 +11,7 @@ Clause 20.2.4: Encoding of an Unsigned Integer Value
 
 	Clause 20.2.1: General Rules for Encoding BACnet Tags
 */
-func EncodeContextTaggedUnsigned(apdu []byte, tagNumber uint8, value uint32) int {
+func EncodeContextTaggedUnsigned(apdu []byte, tagNumber defs.ApplicationTagType, value uint32) int {
 	valueLength := unsignedEncodedLength(value)
 
 	length := EncodeTag(apdu, tagNumber, true, uint32(valueLength))
@@ -25,7 +25,7 @@ func EncodeApplicationTaggedUnsigned(value uint32) []byte {
 	result := make([]byte, 1+length)
 
 	result[0] =
-		(defs.ApplicationTagUnsignedInt << 4) |
+		(byte(defs.ApplicationTagUnsignedInt) << 4) |
 			byte(length)
 
 	switch length {

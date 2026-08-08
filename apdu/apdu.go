@@ -8,9 +8,12 @@ import (
 )
 
 type APDU struct {
-	Type          defs.PDUType
-	ServiceChoice uint8
-	Data          []byte
+	Type defs.PDUType
+
+	ConfirmedServiceChoice   defs.ConfirmedServiceChoice
+	UnconfirmedServiceChoice defs.UnconfirmedServiceChoice
+	
+	Data []byte
 
 	Segmented bool  // Only valid for PDU types that support segmentation.
 	InvokeID  uint8 // Only valid for PDU types that carry an invoke ID.

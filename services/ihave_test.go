@@ -7,13 +7,14 @@ import (
 	"github.com/wz2b/bacnet/apdu"
 	"github.com/wz2b/bacnet/bactypes"
 	"github.com/wz2b/bacnet/codec"
+	"github.com/wz2b/bacnet/defs"
 )
 
 func TestIHaveRoundTrip(t *testing.T) {
 	original := IHave{
 		DeviceID: 12345,
 		ObjectID: bactypes.ObjectID{
-			Type:     bactypes.ObjectType(0), // Analog Input
+			Type:     defs.ObjectType(0), // Analog Input
 			Instance: 42,
 		},
 		ObjectName: codec.CharacterString{
@@ -57,7 +58,7 @@ func TestIHaveEncoding(t *testing.T) {
 	msg := IHave{
 		DeviceID: 12345,
 		ObjectID: bactypes.ObjectID{
-			Type:     bactypes.ObjectType(0), // Analog Input
+			Type:     defs.ObjectType(0), // Analog Input
 			Instance: 42,
 		},
 		ObjectName: codec.CharacterString{
@@ -159,7 +160,7 @@ func TestIHaveDecoding(t *testing.T) {
 	}
 
 	wantObjectID := bactypes.ObjectID{
-		Type:     bactypes.ObjectType(0),
+		Type:     defs.ObjectType(0),
 		Instance: 42,
 	}
 

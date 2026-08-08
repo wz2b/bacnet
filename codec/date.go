@@ -43,7 +43,7 @@ func DecodeDate(apdu []byte) (int, bactypes.Date) {
 	return 4, result
 }
 
-func EncodeContextTaggedDate(apdu []byte, tag_number byte, bdate *bactypes.Date) int {
+func EncodeContextTaggedDate(apdu []byte, tag_number defs.ApplicationTagType, bdate *bactypes.Date) int {
 	var len int = 0 /* return value */
 
 	/* length of date is 4 octets, as per 20.2.12 */

@@ -1,8 +1,10 @@
 package defs
 
+type PolarityType byte
+
 // Polarity constants.
 const (
-	PolarityNormal byte = 0x00
-	PolarityReverse byte = 0x01
-	MaxPolarity byte = 0x02
+	PolarityNormal  PolarityType = 0x00
+	PolarityReverse PolarityType = 0x01
+	MaxPolarity     PolarityType = 0x02
 )

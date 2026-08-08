@@ -1,8 +1,10 @@
 package defs
 
+type FileAccessType byte
+
 // File access constants.
 const (
-	FileRecordAccess byte = 0x00
-	FileStreamAccess byte = 0x01
-	FileRecordAndStreamAccess byte = 0x02
+	FileRecordAccess          FileAccessType = 0x00
+	FileStreamAccess          FileAccessType = 0x01
+	FileRecordAndStreamAccess FileAccessType = 0x02
 )

@@ -1,21 +1,23 @@
 package defs
 
+type Reliability uint16
+
 // Reliability constants.
 const (
-	ReliabilityNoFaultDetected uint16 = 0x00
-	ReliabilityNoSensor uint16 = 0x01
-	ReliabilityOverRange uint16 = 0x02
-	ReliabilityUnderRange uint16 = 0x03
-	ReliabilityOpenLoop uint16 = 0x04
-	ReliabilityShortedLoop uint16 = 0x05
-	ReliabilityNoOutput uint16 = 0x06
-	ReliabilityUnreliableOther uint16 = 0x07
-	ReliabilityProcessError uint16 = 0x08
-	ReliabilityMultiStateFault uint16 = 0x09
-	ReliabilityConfigurationError uint16 = 0x0A
-	ReliabilityMemberFault uint16 = 0x0B
-	ReliabilityCommunicationFailure uint16 = 0x0C
-	ReliabilityTripped uint16 = 0x0D
-	ReliabilityProprietaryMin uint16 = 0x40
-	ReliabilityProprietaryMax uint16 = 0xFFFF
+	ReliabilityNoFaultDetected      Reliability = 0x00
+	ReliabilityNoSensor             Reliability = 0x01
+	ReliabilityOverRange            Reliability = 0x02
+	ReliabilityUnderRange           Reliability = 0x03
+	ReliabilityOpenLoop             Reliability = 0x04
+	ReliabilityShortedLoop          Reliability = 0x05
+	ReliabilityNoOutput             Reliability = 0x06
+	ReliabilityUnreliableOther      Reliability = 0x07
+	ReliabilityProcessError         Reliability = 0x08
+	ReliabilityMultiStateFault      Reliability = 0x09
+	ReliabilityConfigurationError   Reliability = 0x0A
+	ReliabilityMemberFault          Reliability = 0x0B
+	ReliabilityCommunicationFailure Reliability = 0x0C
+	ReliabilityTripped              Reliability = 0x0D
+	ReliabilityProprietaryMin       Reliability = 0x40
+	ReliabilityProprietaryMax       Reliability = 0xFFFF
 )

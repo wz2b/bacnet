@@ -1,32 +1,36 @@
 package defs
 
-// Program constants.
+type ProgramRequest byte
+
 const (
-	ProgramRequestReady byte = 0x00
-	ProgramRequestLoad byte = 0x01
-	ProgramRequestRun byte = 0x02
-	ProgramRequestHalt byte = 0x03
-	ProgramRequestRestart byte = 0x04
-	ProgramRequestUnload byte = 0x05
+	ProgramRequestReady   ProgramRequest = 0x00
+	ProgramRequestLoad    ProgramRequest = 0x01
+	ProgramRequestRun     ProgramRequest = 0x02
+	ProgramRequestHalt    ProgramRequest = 0x03
+	ProgramRequestRestart ProgramRequest = 0x04
+	ProgramRequestUnload  ProgramRequest = 0x05
 )
 
-// Program constants.
+type ProgramState byte
+
 const (
-	ProgramStateIdle byte = 0x00
-	ProgramStateLoading byte = 0x01
-	ProgramStateRunning byte = 0x02
-	ProgramStateWaiting byte = 0x03
-	ProgramStateHalted byte = 0x04
-	ProgramStateUnloading byte = 0x05
+	ProgramStateIdle      ProgramState = 0x00
+	ProgramStateLoading   ProgramState = 0x01
+	ProgramStateRunning   ProgramState = 0x02
+	ProgramStateWaiting   ProgramState = 0x03
+	ProgramStateHalted    ProgramState = 0x04
+	ProgramStateUnloading ProgramState = 0x05
 )
 
-// Program constants.
+type ProgramError uint16
+
 const (
-	ProgramErrorNormal uint16 = 0x00
-	ProgramErrorLoadFailed uint16 = 0x01
-	ProgramErrorInternal uint16 = 0x02
-	ProgramErrorProgram uint16 = 0x03
-	ProgramErrorOther uint16 = 0x04
-	ProgramErrorProprietaryMin uint16 = 0x40
-	ProgramErrorProprietaryMax uint16 = 0xFFFF
+	ProgramErrorNormal     ProgramError = 0x00
+	ProgramErrorLoadFailed ProgramError = 0x01
+	ProgramErrorInternal   ProgramError = 0x02
+	ProgramErrorProgram    ProgramError = 0x03
+	ProgramErrorOther      ProgramError = 0x04
+
+	ProgramErrorProprietaryMin ProgramError = 0x40
+	ProgramErrorProprietaryMax ProgramError = 0xFFFF
 )

@@ -1,16 +1,18 @@
 package defs
 
+type ErrorClass uint16
+
 // Error class constants.
 const (
-	ErrorClassDevice uint16 = 0x00
-	ErrorClassObject uint16 = 0x01
-	ErrorClassProperty uint16 = 0x02
-	ErrorClassResources uint16 = 0x03
-	ErrorClassSecurity uint16 = 0x04
-	ErrorClassServices uint16 = 0x05
-	ErrorClassVT uint16 = 0x06
-	ErrorClassCommunication uint16 = 0x07
-	MaxErrorClass uint16 = 0x08
-	ErrorClassProprietaryFirst uint16 = 0x40
-	ErrorClassProprietaryLast uint16 = 0xFFFF
+	ErrorClassDevice           ErrorClass = 0x00
+	ErrorClassObject           ErrorClass = 0x01
+	ErrorClassProperty         ErrorClass = 0x02
+	ErrorClassResources        ErrorClass = 0x03
+	ErrorClassSecurity         ErrorClass = 0x04
+	ErrorClassServices         ErrorClass = 0x05
+	ErrorClassVT               ErrorClass = 0x06
+	ErrorClassCommunication    ErrorClass = 0x07
+	MaxErrorClass              ErrorClass = 0x08
+	ErrorClassProprietaryFirst ErrorClass = 0x40
+	ErrorClassProprietaryLast  ErrorClass = 0xFFFF
 )

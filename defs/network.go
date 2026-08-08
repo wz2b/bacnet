@@ -1,42 +1,43 @@
 package defs
 
-// Network constants.
+// BACnet network and object identifier limits.
 const (
 	BroadcastNetwork uint16 = 0xFFFF
-	MaxInstance int32 = 0x3FFFFF
-)
 
-// Network constants.
-const (
-	InstanceBits int = 22
-	MaxObject uint32 = 0x3FF
-)
+	InstanceBits        = 22
+	MaxInstance  uint32 = 0x3FFFFF
+	MaxObject    uint32 = 0x3FF
 
-// Network constants.
-const (
 	HopCountDefault byte = 0xFF
 )
 
-// Network constants.
+// NetworkMessageType identifies a BACnet network-layer message.
+//
+// Values 0x80 through 0xFF identify vendor-proprietary network
+// messages and are followed by a vendor identifier.
+type NetworkMessageType byte
+
 const (
-	NetworkMessageWhoIsRouterToNetwork uint16 = 0x00
-	NetworkMessageIAmRouterToNetwork uint16 = 0x01
-	NetworkMessageICouldBeRouterToNetwork uint16 = 0x02
-	NetworkMessageRejectMessageToNetwork uint16 = 0x03
-	NetworkMessageRouterBusyToNetwork uint16 = 0x04
-	NetworkMessageRouterAvailableToNetwork uint16 = 0x05
-	NetworkMessageInitializeRoutingTable uint16 = 0x06
-	NetworkMessageInitializeRoutingTableACK uint16 = 0x07
-	NetworkMessageEstablishConnectionToNetwork uint16 = 0x08
-	NetworkMessageDisconnectConnectionToNetwork uint16 = 0x09
-	NetworkMessageInvalid uint16 = 0x100
+	NetworkMessageWhoIsRouterToNetwork          NetworkMessageType = 0x00
+	NetworkMessageIAmRouterToNetwork            NetworkMessageType = 0x01
+	NetworkMessageICouldBeRouterToNetwork       NetworkMessageType = 0x02
+	NetworkMessageRejectMessageToNetwork        NetworkMessageType = 0x03
+	NetworkMessageRouterBusyToNetwork           NetworkMessageType = 0x04
+	NetworkMessageRouterAvailableToNetwork      NetworkMessageType = 0x05
+	NetworkMessageInitializeRoutingTable        NetworkMessageType = 0x06
+	NetworkMessageInitializeRoutingTableACK     NetworkMessageType = 0x07
+	NetworkMessageEstablishConnectionToNetwork  NetworkMessageType = 0x08
+	NetworkMessageDisconnectConnectionToNetwork NetworkMessageType = 0x09
 )
 
-// Network constants.
+// NetworkRejectReason identifies the reason carried by a
+// Reject-Message-To-Network network-layer message.
+type NetworkRejectReason byte
+
 const (
-	NetworkRejectUnknownError byte = 0x00
-	NetworkRejectNoRoute byte = 0x01
-	NetworkRejectRouterBusy byte = 0x02
-	NetworkRejectUnknownMessageType byte = 0x03
-	NetworkRejectMessageTooLong byte = 0x04
+	NetworkRejectUnknownError       NetworkRejectReason = 0x00
+	NetworkRejectNoRoute            NetworkRejectReason = 0x01
+	NetworkRejectRouterBusy         NetworkRejectReason = 0x02
+	NetworkRejectUnknownMessageType NetworkRejectReason = 0x03
+	NetworkRejectMessageTooLong     NetworkRejectReason = 0x04
 )

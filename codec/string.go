@@ -63,7 +63,7 @@ func DecodeCharacterString(
 /* returns the number of apdu bytes consumed */
 func EncodeContextTaggedCharacterString(
 	apdu []byte,
-	tagNumber byte,
+	tagNumber defs.ApplicationTagType,
 	value *CharacterString,
 ) int {
 	if value == nil {

@@ -9,13 +9,13 @@ import (
 )
 
 type WhoIs struct {
-	LowLimit  int32
-	HighLimit int32
+	LowLimit  *uint32
+	HighLimit *uint32
 }
 
-func (self *WhoIs) SetLimits(low_limit, high_limit int32) *WhoIs {
-	self.LowLimit = low_limit
-	self.HighLimit = high_limit
+func (self *WhoIs) SetLimits(low_limit, high_limit uint32) *WhoIs {
+	self.LowLimit = &low_limit
+	self.HighLimit = &high_limit
 	return self
 }
 
@@ -25,19 +25,23 @@ func (w WhoIs) APDU() []byte {
 	encodeIdx := 2
 
 	pdu[0] = byte(defs.PDUTypeUnconfirmedServiceRequest)
-	pdu[1] = defs.ServiceUnconfirmedWhoIs
+	pdu[1] = byte(defs.ServiceUnconfirmedWhoIs)
 
-	if w.LowLimit >= 0 &&
-		w.LowLimit <= defs.MaxInstance &&
-		w.HighLimit >= 0 &&
-		w.HighLimit <= defs.MaxInstance {
+	if w.LowLimit != nil &&
+		w.HighLimit != nil &&
+		*w.LowLimit <= uint32(defs.MaxInstance) &&
+		*w.HighLimit <= uint32(defs.MaxInstance) {
 
 		encodeIdx += codec.EncodeContextTaggedUnsigned(
-			pdu[encodeIdx:], 0, uint32(w.LowLimit),
+			pdu[encodeIdx:],
+			0,
+			*w.LowLimit,
 		)
 
 		encodeIdx += codec.EncodeContextTaggedUnsigned(
-			pdu[encodeIdx:], 1, uint32(w.HighLimit),
+			pdu[encodeIdx:],
+			1,
+			*w.HighLimit,
 		)
 	}
 
@@ -49,14 +53,11 @@ func DecodeWhoIs(a *apdu.APDU) (*WhoIs, error) {
 		return nil, fmt.Errorf("Who-Is requires an unconfirmed service request APDU")
 	}
 
-	if a.ServiceChoice != defs.ServiceUnconfirmedWhoIs {
+	if a.UnconfirmedServiceChoice != defs.ServiceUnconfirmedWhoIs {
 		return nil, fmt.Errorf("APDU is not a Who-Is request")
 	}
 
-	w := &WhoIs{
-		LowLimit:  -1,
-		HighLimit: -1,
-	}
+	w := &WhoIs{}
 
 	if len(a.Data) == 0 {
 		return w, nil
@@ -78,7 +79,8 @@ func DecodeWhoIs(a *apdu.APDU) (*WhoIs, error) {
 		return nil, fmt.Errorf("Who-Is low limit out of range: %d", value)
 	}
 
-	w.LowLimit = int32(value)
+	ll := uint32(value)
+	w.LowLimit = &ll
 
 	if decodeIdx >= len(a.Data) {
 		return nil, fmt.Errorf("Who-Is high limit missing")
@@ -93,11 +95,12 @@ func DecodeWhoIs(a *apdu.APDU) (*WhoIs, error) {
 
 	_, value = codec.DecodeUnsigned(a.Data[decodeIdx:], length)
 
-	if value > uint32(defs.MaxInstance) {
+	if value > defs.MaxInstance {
 		return nil, fmt.Errorf("Who-Is high limit out of range: %d", value)
 	}
 
-	w.HighLimit = int32(value)
+	hl := value
+	w.HighLimit = &hl
 
 	return w, nil
 }

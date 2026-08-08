@@ -14,7 +14,7 @@ func Decode(a *apdu.APDU) (any, error) {
 
 	switch a.Type {
 	case defs.PDUTypeUnconfirmedServiceRequest:
-		switch a.ServiceChoice {
+		switch defs.UnconfirmedServiceChoice(a.UnconfirmedServiceChoice) {
 		case defs.ServiceUnconfirmedIAm:
 			return DecodeIAm(a)
 
@@ -34,7 +34,7 @@ func Decode(a *apdu.APDU) (any, error) {
 		}
 
 	case defs.PDUTypeConfirmedServiceRequest:
-		switch a.ServiceChoice {
+		switch defs.ConfirmedServiceChoice(a.ConfirmedServiceChoice) {
 		case defs.ServiceConfirmedAcknowledgeAlarm:
 			return DecodeACKAlarm(a)
 
@@ -48,7 +48,7 @@ func Decode(a *apdu.APDU) (any, error) {
 		}
 
 	case defs.PDUTypeComplexACK:
-		switch a.ServiceChoice {
+		switch defs.ConfirmedServiceChoice(a.ConfirmedServiceChoice) {
 		case defs.ServiceConfirmedReadProperty:
 			return DecodeReadPropertyACK(a)
 

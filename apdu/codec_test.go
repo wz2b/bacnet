@@ -9,9 +9,11 @@ import (
 
 func TestEncodeUnconfirmedServiceRequest(t *testing.T) {
 	a := APDU{
-		Type:          defs.PDUTypeUnconfirmedServiceRequest,
-		ServiceChoice: 0x08,
-		Data:          []byte{0x0A, 0x03, 0xE8},
+		Type:                     defs.PDUTypeUnconfirmedServiceRequest,
+		UnconfirmedServiceChoice: defs.ServiceUnconfirmedWhoIs,
+		Data: []byte{
+			0x0A, 0x03, 0xE8,
+		},
 	}
 
 	got, err := Encode(a)
@@ -54,11 +56,11 @@ func TestDecodeUnconfirmedServiceRequest(t *testing.T) {
 		)
 	}
 
-	if a.ServiceChoice != 0x08 {
+	if a.UnconfirmedServiceChoice != defs.ServiceUnconfirmedWhoIs {
 		t.Errorf(
-			"ServiceChoice: got %d, want %d",
-			a.ServiceChoice,
-			0x08,
+			"UnconfirmedServiceChoice: got %d, want %d",
+			a.UnconfirmedServiceChoice,
+			defs.ServiceUnconfirmedWhoIs,
 		)
 	}
 
@@ -75,11 +77,11 @@ func TestDecodeUnconfirmedServiceRequest(t *testing.T) {
 
 func TestEncodeConfirmedServiceRequest(t *testing.T) {
 	a := APDU{
-		Type:          defs.PDUTypeConfirmedServiceRequest,
-		ServiceChoice: 0x0C,
-		InvokeID:      42,
-		MaxSegments:   0,
-		MaxAPDU:       1476,
+		Type:                   defs.PDUTypeConfirmedServiceRequest,
+		ConfirmedServiceChoice: defs.ServiceConfirmedReadProperty,
+		InvokeID:               42,
+		MaxSegments:            0,
+		MaxAPDU:                1476,
 		Data: []byte{
 			0x0C,
 			0x00, 0x80, 0x04, 0xD2,
@@ -145,11 +147,11 @@ func TestDecodeConfirmedServiceRequest(t *testing.T) {
 		)
 	}
 
-	if a.ServiceChoice != 0x0C {
+	if a.ConfirmedServiceChoice != defs.ServiceConfirmedReadProperty {
 		t.Errorf(
-			"ServiceChoice: got %d, want %d",
-			a.ServiceChoice,
-			0x0C,
+			"ConfirmedServiceChoice: got %d, want %d",
+			a.ConfirmedServiceChoice,
+			defs.ServiceConfirmedReadProperty,
 		)
 	}
 
@@ -186,9 +188,9 @@ func TestDecodeConfirmedServiceRequest(t *testing.T) {
 
 func TestEncodeComplexACK(t *testing.T) {
 	a := APDU{
-		Type:          defs.PDUTypeComplexACK,
-		InvokeID:      42,
-		ServiceChoice: 0x0C,
+		Type:                   defs.PDUTypeComplexACK,
+		InvokeID:               42,
+		ConfirmedServiceChoice: defs.ServiceConfirmedReadProperty,
 		Data: []byte{
 			0x0C,
 			0x00, 0x80, 0x04, 0xD2,
@@ -261,11 +263,11 @@ func TestDecodeComplexACK(t *testing.T) {
 		)
 	}
 
-	if a.ServiceChoice != 0x0C {
+	if a.ConfirmedServiceChoice != defs.ServiceConfirmedReadProperty {
 		t.Errorf(
-			"ServiceChoice: got %d, want %d",
-			a.ServiceChoice,
-			0x0C,
+			"ConfirmedServiceChoice: got %d, want %d",
+			a.ConfirmedServiceChoice,
+			defs.ServiceConfirmedReadProperty,
 		)
 	}
 

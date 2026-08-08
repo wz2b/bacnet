@@ -10,8 +10,8 @@ import (
 )
 
 type WhoHas struct {
-	LowLimit  int32
-	HighLimit int32
+	LowLimit  *uint32
+	HighLimit *uint32
 
 	IsObjectName bool
 	Identifier   bactypes.ObjectID
@@ -22,21 +22,17 @@ func (w WhoHas) APDU() apdu.APDU {
 	data := make([]byte, 64)
 	encodeIdx := 0
 
-	if w.LowLimit >= 0 &&
-		w.LowLimit <= defs.MaxInstance &&
-		w.HighLimit >= 0 &&
-		w.HighLimit <= defs.MaxInstance {
-
+	if w.LowLimit != nil && w.HighLimit != nil {
 		encodeIdx += codec.EncodeContextTaggedUnsigned(
 			data[encodeIdx:],
 			0,
-			uint32(w.LowLimit),
+			*w.LowLimit,
 		)
 
 		encodeIdx += codec.EncodeContextTaggedUnsigned(
 			data[encodeIdx:],
 			1,
-			uint32(w.HighLimit),
+			*w.HighLimit,
 		)
 	}
 
@@ -55,9 +51,9 @@ func (w WhoHas) APDU() apdu.APDU {
 	}
 
 	return apdu.APDU{
-		Type:          defs.PDUTypeUnconfirmedServiceRequest,
-		ServiceChoice: defs.ServiceUnconfirmedWhoHas,
-		Data:          data[:encodeIdx],
+		Type:                     defs.PDUTypeUnconfirmedServiceRequest,
+		UnconfirmedServiceChoice: defs.ServiceUnconfirmedWhoHas,
+		Data:                     data[:encodeIdx],
 	}
 }
 
@@ -68,16 +64,13 @@ func DecodeWhoHas(a *apdu.APDU) (*WhoHas, error) {
 		)
 	}
 
-	if a.ServiceChoice != defs.ServiceUnconfirmedWhoHas {
+	if a.UnconfirmedServiceChoice != defs.ServiceUnconfirmedWhoHas {
 		return nil, fmt.Errorf(
 			"APDU is not a Who-Has request",
 		)
 	}
 
-	result := &WhoHas{
-		LowLimit:  -1,
-		HighLimit: -1,
-	}
+	result := &WhoHas{}
 
 	data := a.Data
 	decodeIdx := 0
@@ -118,7 +111,8 @@ func DecodeWhoHas(a *apdu.APDU) (*WhoHas, error) {
 		}
 
 		decodeIdx += n
-		result.LowLimit = int32(value)
+		lowLimit := uint32(value)
+		result.LowLimit = &lowLimit
 
 		if decodeIdx >= len(data) ||
 			!codec.IsContextTag(data[decodeIdx:], 1) {
@@ -156,7 +150,9 @@ func DecodeWhoHas(a *apdu.APDU) (*WhoHas, error) {
 		}
 
 		decodeIdx += n
-		result.HighLimit = int32(value)
+
+		highLimit := value
+		result.HighLimit = &highLimit
 	}
 
 	if decodeIdx >= len(data) {

@@ -37,7 +37,7 @@ type RoutingTable struct {
 
 func (pdu *NPDU) IsRoutingTableAck() bool {
 	return pdu.NetworkLayer &&
-		pdu.MessageType == byte(defs.NetworkMessageInitializeRoutingTableACK)
+		pdu.MessageType == defs.NetworkMessageInitializeRoutingTableACK
 }
 
 func (pdu *NPDU) ToRoutingTableAck() (*RoutingTable, error) {
@@ -216,7 +216,7 @@ func (r *RoutingTableRequest) ToNPDUDest(dest *bactypes.Address) (*NPDU, error) 
 		defs.MessagePriorityNormal,
 	)
 
-	npdu.MessageType = byte(defs.NetworkMessageInitializeRoutingTable)
+	npdu.MessageType = defs.NetworkMessageInitializeRoutingTable
 	npdu.HopCount = 255
 
 	//

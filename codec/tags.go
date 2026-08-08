@@ -1,10 +1,12 @@
 package codec
 
+import "github.com/wz2b/bacnet/defs"
+
 /* from clause 20.2.1 General Rules for Encoding BACnet Tags */
 /* returns the number of apdu bytes consumed */
 func EncodeTag(
 	apdu []byte,
-	tagNumber byte,
+	tagNumber defs.ApplicationTagType,
 	contextSpecific bool,
 	lenValueType uint32,
 ) int {
@@ -20,10 +22,10 @@ func EncodeTag(
 	 * Tag number.
 	 */
 	if tagNumber <= 14 {
-		apdu[0] |= tagNumber << 4
+		apdu[0] |= byte(tagNumber) << 4
 	} else {
 		apdu[0] |= 0xF0
-		apdu[length] = tagNumber
+		apdu[length] = byte(tagNumber)
 		length++
 	}
 
@@ -132,7 +134,7 @@ func DecodeTagNumber(apdu []byte) (int, byte) {
 	return 1, apdu[0] >> 4
 }
 
-func DecodeTagNumberAndValue(apdu []byte) (int, byte, uint32) {
+func DecodeTagNumberAndValue(apdu []byte) (int, defs.ApplicationTagType, uint32) {
 	if len(apdu) == 0 {
 		return 0, 0, 0
 	}
@@ -187,7 +189,7 @@ func DecodeTagNumberAndValue(apdu []byte) (int, byte, uint32) {
 		value = uint32(apdu[0] & 0x07)
 	}
 
-	return length, tagNumber, value
+	return length, defs.ApplicationTagType(tagNumber), value
 }
 
 /* from clause 20.2.1.3.2 Constructed Data */

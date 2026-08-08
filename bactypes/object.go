@@ -1,11 +1,11 @@
 package bactypes
 
-type ObjectType uint16
+import "github.com/wz2b/bacnet/defs"
 
 type Object interface {
 	ObjectID() ObjectID
 	ObjectName() string
-	ObjectType() ObjectType
+	ObjectType() defs.ObjectType
 }
 
 type DefaultObject struct {

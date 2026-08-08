@@ -13,7 +13,8 @@ func Encode(a APDU) ([]byte, error) {
 		result := make([]byte, 2+len(a.Data))
 
 		result[0] = byte(a.Type)
-		result[1] = a.ServiceChoice
+		result[1] = byte(a.UnconfirmedServiceChoice)
+
 		copy(result[2:], a.Data)
 
 		return result, nil
@@ -33,7 +34,8 @@ func Encode(a APDU) ([]byte, error) {
 		)
 
 		result[2] = a.InvokeID
-		result[3] = a.ServiceChoice
+		result[3] = byte(a.ConfirmedServiceChoice)
+
 		copy(result[4:], a.Data)
 
 		return result, nil
@@ -43,7 +45,7 @@ func Encode(a APDU) ([]byte, error) {
 
 		result[0] = byte(a.Type)
 		result[1] = a.InvokeID
-		result[2] = a.ServiceChoice
+		result[2] = byte(a.ConfirmedServiceChoice)
 
 		copy(result[3:], a.Data)
 
@@ -72,7 +74,7 @@ func Decode(data []byte) (APDU, error) {
 			return result, fmt.Errorf("truncated unconfirmed request APDU")
 		}
 
-		result.ServiceChoice = data[1]
+		result.UnconfirmedServiceChoice = defs.UnconfirmedServiceChoice(data[1])
 		result.Data = append([]byte(nil), data[2:]...)
 
 		return result, nil
@@ -88,7 +90,7 @@ func Decode(data []byte) (APDU, error) {
 		result.MaxAPDU = maxAPDU
 
 		result.InvokeID = data[2]
-		result.ServiceChoice = data[3]
+		result.ConfirmedServiceChoice = defs.ConfirmedServiceChoice(data[3])
 		result.Data = append([]byte(nil), data[4:]...)
 
 		return result, nil
@@ -107,7 +109,7 @@ func Decode(data []byte) (APDU, error) {
 		}
 
 		result.InvokeID = data[1]
-		result.ServiceChoice = data[2]
+		result.ConfirmedServiceChoice = defs.ConfirmedServiceChoice(data[2])
 		result.Data = append([]byte(nil), data[3:]...)
 
 		return result, nil

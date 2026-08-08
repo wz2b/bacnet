@@ -5,13 +5,14 @@ import (
 
 	"github.com/wz2b/bacnet/bactypes"
 	"github.com/wz2b/bacnet/codec"
+	"github.com/wz2b/bacnet/defs"
 )
 
 func TestACKAlarmEncodingAndDecoding(t *testing.T) {
 	original := ACKAlarm{
 		AckProcessIdentifier: 1234,
 		EventObjectIdentifier: bactypes.ObjectID{
-			Type:     bactypes.ObjectType(2),
+			Type:     defs.ObjectType(2),
 			Instance: 1001,
 		},
 		EventStateAcked: 1,

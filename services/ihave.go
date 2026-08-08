@@ -28,7 +28,7 @@ func (i IHave) APDU() apdu.APDU {
 	encodeIdx += codec.EncodeApplicationTaggedObjectID(
 		data[encodeIdx:],
 		bactypes.ObjectID{
-			Type:     bactypes.ObjectType(defs.ObjectDevice),
+			Type:     defs.ObjectDevice,
 			Instance: i.DeviceID,
 		},
 	)
@@ -46,9 +46,9 @@ func (i IHave) APDU() apdu.APDU {
 	)
 
 	return apdu.APDU{
-		Type:          defs.PDUTypeUnconfirmedServiceRequest,
-		ServiceChoice: defs.ServiceUnconfirmedIHave,
-		Data:          data[:encodeIdx],
+		Type:                     defs.PDUTypeUnconfirmedServiceRequest,
+		UnconfirmedServiceChoice: defs.ServiceUnconfirmedIHave,
+		Data:                     data[:encodeIdx],
 	}
 }
 
@@ -57,7 +57,7 @@ func DecodeIHave(a *apdu.APDU) (*IHave, error) {
 		return nil, fmt.Errorf("I-Have requires an unconfirmed service request APDU")
 	}
 
-	if a.ServiceChoice != defs.ServiceUnconfirmedIHave {
+	if a.UnconfirmedServiceChoice != defs.ServiceUnconfirmedIHave {
 		return nil, fmt.Errorf("APDU is not an I-Have request")
 	}
 
@@ -94,7 +94,7 @@ func DecodeIHave(a *apdu.APDU) (*IHave, error) {
 	}
 	decodeIdx += n
 
-	if objectType != bactypes.ObjectType(defs.ObjectDevice) {
+	if objectType != defs.ObjectType(defs.ObjectDevice) {
 		return nil, fmt.Errorf(
 			"I-Have device identifier is not a Device object: %d",
 			objectType,

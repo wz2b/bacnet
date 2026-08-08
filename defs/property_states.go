@@ -1,39 +1,41 @@
 package defs
 
+type PropertyState byte
+
 // Property states constants.
 const (
-	PropertyStateBooleanValue byte = 0x00
-	PropertyStateBinaryValue byte = 0x01
-	PropertyStateEventType byte = 0x02
-	PropertyStatePolarity byte = 0x03
-	PropertyStateProgramChange byte = 0x04
-	PropertyStateProgramState byte = 0x05
-	PropertyStateReasonForHalt byte = 0x06
-	PropertyStateReliability byte = 0x07
-	PropertyStateEventState byte = 0x08
-	PropertyStateSystemStatus byte = 0x09
-	PropertyStateUnits byte = 0x0A
-	PropertyStateUnsignedValue byte = 0x0B
-	PropertyStateLifeSafetyMode byte = 0x0C
-	PropertyStateLifeSafetyState byte = 0x0D
-	PropertyStateRestartReason byte = 0x0E
-	PropertyStateDoorAlarmState byte = 0x0F
-	PropertyStateAction byte = 0x10
-	PropertyStateDoorSecuredStatus byte = 0x11
-	PropertyStateDoorStatus byte = 0x12
-	PropertyStateDoorValue byte = 0x13
-	PropertyStateFileAccessMethod byte = 0x14
-	PropertyStateLockStatus byte = 0x15
-	PropertyStateLifeSafetyOperation byte = 0x16
-	PropertyStateMaintenance byte = 0x17
-	PropertyStateNodeType byte = 0x18
-	PropertyStateNotifyType byte = 0x19
-	PropertyStateSecurityLevel byte = 0x1A
-	PropertyStateShedState byte = 0x1B
-	PropertyStateSilencedState byte = 0x1C
-	PropertyStateAccessEvent byte = 0x1E
-	PropertyStateZoneOccupancyState byte = 0x1F
-	PropertyStateAccessCredDisableReason byte = 0x20
-	PropertyStateAccessCredDisable byte = 0x21
-	PropertyStateAuthenticationStatus byte = 0x22
+	PropertyStateBooleanValue            PropertyState = 0x00
+	PropertyStateBinaryValue             PropertyState = 0x01
+	PropertyStateEventType               PropertyState = 0x02
+	PropertyStatePolarity                PropertyState = 0x03
+	PropertyStateProgramChange           PropertyState = 0x04
+	PropertyStateProgramState            PropertyState = 0x05
+	PropertyStateReasonForHalt           PropertyState = 0x06
+	PropertyStateReliability             PropertyState = 0x07
+	PropertyStateEventState              PropertyState = 0x08
+	PropertyStateSystemStatus            PropertyState = 0x09
+	PropertyStateUnits                   PropertyState = 0x0A
+	PropertyStateUnsignedValue           PropertyState = 0x0B
+	PropertyStateLifeSafetyMode          PropertyState = 0x0C
+	PropertyStateLifeSafetyState         PropertyState = 0x0D
+	PropertyStateRestartReason           PropertyState = 0x0E
+	PropertyStateDoorAlarmState          PropertyState = 0x0F
+	PropertyStateAction                  PropertyState = 0x10
+	PropertyStateDoorSecuredStatus       PropertyState = 0x11
+	PropertyStateDoorStatus              PropertyState = 0x12
+	PropertyStateDoorValue               PropertyState = 0x13
+	PropertyStateFileAccessMethod        PropertyState = 0x14
+	PropertyStateLockStatus              PropertyState = 0x15
+	PropertyStateLifeSafetyOperation     PropertyState = 0x16
+	PropertyStateMaintenance             PropertyState = 0x17
+	PropertyStateNodeType                PropertyState = 0x18
+	PropertyStateNotifyType              PropertyState = 0x19
+	PropertyStateSecurityLevel           PropertyState = 0x1A
+	PropertyStateShedState               PropertyState = 0x1B
+	PropertyStateSilencedState           PropertyState = 0x1C
+	PropertyStateAccessEvent             PropertyState = 0x1E
+	PropertyStateZoneOccupancyState      PropertyState = 0x1F
+	PropertyStateAccessCredDisableReason PropertyState = 0x20
+	PropertyStateAccessCredDisable       PropertyState = 0x21
+	PropertyStateAuthenticationStatus    PropertyState = 0x22
 )

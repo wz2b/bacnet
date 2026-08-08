@@ -12,7 +12,7 @@ import (
 type IAm struct {
 	DeviceID     uint32
 	MaxAPDU      uint32
-	Segmentation int
+	Segmentation defs.Segmentation
 	VendorID     uint16
 }
 
@@ -23,7 +23,7 @@ func (i IAm) APDU() apdu.APDU {
 	encodeIdx += codec.EncodeApplicationTaggedObjectID(
 		data[encodeIdx:],
 		bactypes.ObjectID{
-			Type:     bactypes.ObjectType(defs.ObjectDevice),
+			Type:     defs.ObjectDevice,
 			Instance: i.DeviceID,
 		},
 	)
@@ -44,9 +44,9 @@ func (i IAm) APDU() apdu.APDU {
 	encodeIdx += len(encoded)
 
 	return apdu.APDU{
-		Type:          defs.PDUTypeUnconfirmedServiceRequest,
-		ServiceChoice: defs.ServiceUnconfirmedIAm,
-		Data:          data[:encodeIdx],
+		Type:                     defs.PDUTypeUnconfirmedServiceRequest,
+		UnconfirmedServiceChoice: defs.ServiceUnconfirmedIAm,
+		Data:                     data[:encodeIdx],
 	}
 }
 
@@ -55,7 +55,7 @@ func DecodeIAm(a *apdu.APDU) (*IAm, error) {
 		return nil, fmt.Errorf("I-Am requires an unconfirmed service request APDU")
 	}
 
-	if a.ServiceChoice != defs.ServiceUnconfirmedIAm {
+	if a.UnconfirmedServiceChoice != defs.ServiceUnconfirmedIAm {
 		return nil, fmt.Errorf("APDU is not an I-Am request")
 	}
 
@@ -92,7 +92,7 @@ func DecodeIAm(a *apdu.APDU) (*IAm, error) {
 	}
 	decodeIdx += n
 
-	if objectType != bactypes.ObjectType(defs.ObjectDevice) {
+	if objectType != defs.ObjectType(defs.ObjectDevice) {
 		return nil, fmt.Errorf(
 			"I-Am object identifier is not a device object: %d",
 			objectType,
@@ -169,12 +169,16 @@ func DecodeIAm(a *apdu.APDU) (*IAm, error) {
 	}
 	decodeIdx += n
 
-	if value >= uint32(defs.MaxSegmentation) {
-		return nil, fmt.Errorf("I-Am segmentation value out of range: %d", value)
+	segmentation := defs.Segmentation(value)
+
+	if !segmentation.Valid() {
+		return nil, fmt.Errorf(
+			"I-Am segmentation value out of range: %d",
+			value,
+		)
 	}
 
-	result.Segmentation = int(value)
-
+	result.Segmentation = segmentation
 	/*
 		Vendor Identifier
 	*/

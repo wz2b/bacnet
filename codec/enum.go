@@ -24,7 +24,7 @@ func DecodeEnumerated(apdu []byte, len_value uint32) (int, uint32) {
 /* from clause 20.2.11 Encoding of an Enumerated Value */
 /* and 20.2.1 General Rules for Encoding BACnet Tags */
 /* returns the number of apdu bytes consumed */
-func EncodeContextTaggedEnum(apdu []byte, tag_number byte, value uint32) int {
+func EncodeContextTaggedEnum(apdu []byte, tag_number defs.ApplicationTagType, value uint32) int {
 	var length int = 0
 
 	if value < 0x100 {

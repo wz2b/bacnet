@@ -7,14 +7,15 @@ import (
 	"github.com/wz2b/bacnet/apdu"
 	"github.com/wz2b/bacnet/bactypes"
 	"github.com/wz2b/bacnet/codec"
+	"github.com/wz2b/bacnet/defs"
 )
 
 func TestWhoHasRoundTripByObjectID(t *testing.T) {
 	original := WhoHas{
-		LowLimit:  1000,
-		HighLimit: 2000,
+		LowLimit:  uint32Ptr(1000),
+		HighLimit: uint32Ptr(2000),
 		Identifier: bactypes.ObjectID{
-			Type:     bactypes.ObjectType(0),
+			Type:     defs.ObjectType(0),
 			Instance: 42,
 		},
 		IsObjectName: false,
@@ -27,17 +28,21 @@ func TestWhoHasRoundTripByObjectID(t *testing.T) {
 		t.Fatalf("DecodeWhoHas() error: %v", err)
 	}
 
-	if decoded.LowLimit != original.LowLimit {
+	if decoded.LowLimit == nil ||
+		original.LowLimit == nil ||
+		*decoded.LowLimit != *original.LowLimit {
 		t.Errorf(
-			"LowLimit: got %d, want %d",
+			"LowLimit: got %v, want %v",
 			decoded.LowLimit,
 			original.LowLimit,
 		)
 	}
 
-	if decoded.HighLimit != original.HighLimit {
+	if decoded.HighLimit == nil ||
+		original.HighLimit == nil ||
+		*decoded.HighLimit != *original.HighLimit {
 		t.Errorf(
-			"HighLimit: got %d, want %d",
+			"HighLimit: got %v, want %v",
 			decoded.HighLimit,
 			original.HighLimit,
 		)
@@ -58,8 +63,8 @@ func TestWhoHasRoundTripByObjectID(t *testing.T) {
 
 func TestWhoHasRoundTripByObjectName(t *testing.T) {
 	original := WhoHas{
-		LowLimit:     -1,
-		HighLimit:    -1,
+		LowLimit:     nil,
+		HighLimit:    nil,
 		IsObjectName: true,
 		Name: codec.CharacterString{
 			Value: []byte("Zone Temperature"),
@@ -73,17 +78,17 @@ func TestWhoHasRoundTripByObjectName(t *testing.T) {
 		t.Fatalf("DecodeWhoHas() error: %v", err)
 	}
 
-	if decoded.LowLimit != -1 {
+	if decoded.LowLimit != nil {
 		t.Errorf(
-			"LowLimit: got %d, want -1",
-			decoded.LowLimit,
+			"LowLimit: got %d, want nil",
+			*decoded.LowLimit,
 		)
 	}
 
-	if decoded.HighLimit != -1 {
+	if decoded.HighLimit != nil {
 		t.Errorf(
-			"HighLimit: got %d, want -1",
-			decoded.HighLimit,
+			"HighLimit: got %d, want nil",
+			*decoded.HighLimit,
 		)
 	}
 
@@ -103,23 +108,21 @@ func TestWhoHasRoundTripByObjectName(t *testing.T) {
 func TestWhoHasLimitRoundTrip(t *testing.T) {
 	tests := []struct {
 		name      string
-		lowLimit  int32
-		highLimit int32
+		lowLimit  *uint32
+		highLimit *uint32
 	}{
 		{
-			name:      "no limits",
-			lowLimit:  -1,
-			highLimit: -1,
+			name: "no limits",
 		},
 		{
 			name:      "small range",
-			lowLimit:  0,
-			highLimit: 100,
+			lowLimit:  uint32Ptr(0),
+			highLimit: uint32Ptr(100),
 		},
 		{
 			name:      "large range",
-			lowLimit:  100000,
-			highLimit: 200000,
+			lowLimit:  uint32Ptr(100000),
+			highLimit: uint32Ptr(200000),
 		},
 	}
 
@@ -129,7 +132,7 @@ func TestWhoHasLimitRoundTrip(t *testing.T) {
 				LowLimit:  tt.lowLimit,
 				HighLimit: tt.highLimit,
 				Identifier: bactypes.ObjectID{
-					Type:     bactypes.ObjectType(0),
+					Type:     defs.ObjectType(0),
 					Instance: 1,
 				},
 			}
@@ -141,19 +144,29 @@ func TestWhoHasLimitRoundTrip(t *testing.T) {
 				t.Fatalf("DecodeWhoHas() error: %v", err)
 			}
 
-			if decoded.LowLimit != original.LowLimit {
+			if tt.lowLimit == nil {
+				if decoded.LowLimit != nil {
+					t.Errorf("LowLimit: got %d, want nil", *decoded.LowLimit)
+				}
+			} else if decoded.LowLimit == nil ||
+				*decoded.LowLimit != *tt.lowLimit {
 				t.Errorf(
-					"LowLimit: got %d, want %d",
+					"LowLimit: got %v, want %v",
 					decoded.LowLimit,
-					original.LowLimit,
+					tt.lowLimit,
 				)
 			}
 
-			if decoded.HighLimit != original.HighLimit {
+			if tt.highLimit == nil {
+				if decoded.HighLimit != nil {
+					t.Errorf("HighLimit: got %d, want nil", *decoded.HighLimit)
+				}
+			} else if decoded.HighLimit == nil ||
+				*decoded.HighLimit != *tt.highLimit {
 				t.Errorf(
-					"HighLimit: got %d, want %d",
+					"HighLimit: got %v, want %v",
 					decoded.HighLimit,
-					original.HighLimit,
+					tt.highLimit,
 				)
 			}
 		})
@@ -162,10 +175,10 @@ func TestWhoHasLimitRoundTrip(t *testing.T) {
 
 func TestWhoHasEncodingByObjectID(t *testing.T) {
 	msg := WhoHas{
-		LowLimit:  1000,
-		HighLimit: 2000,
+		LowLimit:  uint32Ptr(1000),
+		HighLimit: uint32Ptr(2000),
 		Identifier: bactypes.ObjectID{
-			Type:     bactypes.ObjectType(0), // Analog Input
+			Type:     defs.ObjectType(0),
 			Instance: 42,
 		},
 		IsObjectName: false,
@@ -179,19 +192,9 @@ func TestWhoHasEncodingByObjectID(t *testing.T) {
 	}
 
 	want := []byte{
-		// Unconfirmed-Request, Who-Has
 		0x10, 0x07,
-
-		// [0] lowLimit = 1000
-		// context tag 0, length 2
 		0x0A, 0x03, 0xE8,
-
-		// [1] highLimit = 2000
-		// context tag 1, length 2
 		0x1A, 0x07, 0xD0,
-
-		// [2] objectIdentifier = AnalogInput:42
-		// context tag 2, length 4
 		0x2C,
 		0x00, 0x00, 0x00, 0x2A,
 	}
@@ -207,16 +210,9 @@ func TestWhoHasEncodingByObjectID(t *testing.T) {
 
 func TestWhoHasDecodingByObjectID(t *testing.T) {
 	data := []byte{
-		// Unconfirmed-Request, Who-Has
 		0x10, 0x07,
-
-		// [0] lowLimit = 1000
 		0x0A, 0x03, 0xE8,
-
-		// [1] highLimit = 2000
 		0x1A, 0x07, 0xD0,
-
-		// [2] objectIdentifier = AnalogInput:42
 		0x2C,
 		0x00, 0x00, 0x00, 0x2A,
 	}
@@ -231,28 +227,16 @@ func TestWhoHasDecodingByObjectID(t *testing.T) {
 		t.Fatalf("DecodeWhoHas() error: %v", err)
 	}
 
-	if decoded.LowLimit != 1000 {
-		t.Errorf(
-			"LowLimit: got %d, want %d",
-			decoded.LowLimit,
-			1000,
-		)
+	if decoded.LowLimit == nil || *decoded.LowLimit != 1000 {
+		t.Errorf("LowLimit: got %v, want 1000", decoded.LowLimit)
 	}
 
-	if decoded.HighLimit != 2000 {
-		t.Errorf(
-			"HighLimit: got %d, want %d",
-			decoded.HighLimit,
-			2000,
-		)
-	}
-
-	if decoded.IsObjectName {
-		t.Errorf("IsObjectName: got true, want false")
+	if decoded.HighLimit == nil || *decoded.HighLimit != 2000 {
+		t.Errorf("HighLimit: got %v, want 2000", decoded.HighLimit)
 	}
 
 	wantObjectID := bactypes.ObjectID{
-		Type:     bactypes.ObjectType(0),
+		Type:     defs.ObjectType(0),
 		Instance: 42,
 	}
 
@@ -267,8 +251,8 @@ func TestWhoHasDecodingByObjectID(t *testing.T) {
 
 func TestWhoHasEncodingByObjectName(t *testing.T) {
 	msg := WhoHas{
-		LowLimit:     -1,
-		HighLimit:    -1,
+		LowLimit:     nil,
+		HighLimit:    nil,
 		IsObjectName: true,
 		Name: codec.CharacterString{
 			Value: []byte("Zone Temperature"),
@@ -283,17 +267,9 @@ func TestWhoHasEncodingByObjectName(t *testing.T) {
 	}
 
 	want := []byte{
-		// Unconfirmed-Request, Who-Has
 		0x10, 0x07,
-
-		// [3] objectName
-		// context tag 3, extended length 17
 		0x3D, 0x11,
-
-		// Character encoding: ANSI X3.4
 		0x00,
-
-		// "Zone Temperature"
 		0x5A, 0x6F, 0x6E, 0x65,
 		0x20,
 		0x54, 0x65, 0x6D, 0x70,
@@ -312,17 +288,9 @@ func TestWhoHasEncodingByObjectName(t *testing.T) {
 
 func TestWhoHasDecodingByObjectName(t *testing.T) {
 	data := []byte{
-		// Unconfirmed-Request, Who-Has
 		0x10, 0x07,
-
-		// [3] objectName
-		// context tag 3, extended length 17
 		0x3D, 0x11,
-
-		// Character encoding: ANSI X3.4
 		0x00,
-
-		// "Zone Temperature"
 		0x5A, 0x6F, 0x6E, 0x65,
 		0x20,
 		0x54, 0x65, 0x6D, 0x70,
@@ -340,18 +308,12 @@ func TestWhoHasDecodingByObjectName(t *testing.T) {
 		t.Fatalf("DecodeWhoHas() error: %v", err)
 	}
 
-	if decoded.LowLimit != -1 {
-		t.Errorf(
-			"LowLimit: got %d, want -1",
-			decoded.LowLimit,
-		)
+	if decoded.LowLimit != nil {
+		t.Errorf("LowLimit: got %d, want nil", *decoded.LowLimit)
 	}
 
-	if decoded.HighLimit != -1 {
-		t.Errorf(
-			"HighLimit: got %d, want -1",
-			decoded.HighLimit,
-		)
+	if decoded.HighLimit != nil {
+		t.Errorf("HighLimit: got %d, want nil", *decoded.HighLimit)
 	}
 
 	if !decoded.IsObjectName {

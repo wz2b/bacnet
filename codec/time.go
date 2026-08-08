@@ -31,7 +31,7 @@ func DecodeTime(apdu []byte) (int, bactypes.Time) {
 	return 4, result
 }
 
-func EncodeContextTaggedTime(apdu []byte, tag_number byte, btime *bactypes.Time) int {
+func EncodeContextTaggedTime(apdu []byte, tag_number defs.ApplicationTagType, btime *bactypes.Time) int {
 	var length int = 0 /* return value */
 
 	/* length of time is 4 octets, as per 20.2.13 */

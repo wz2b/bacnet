@@ -1,7 +1,9 @@
 package defs
 
+type ActionType byte
+
 // Action constants.
 const (
-	ActionDirect byte = 0x00
-	ActionReverse byte = 0x01
+	ActionDirect  ActionType = 0x00
+	ActionReverse ActionType = 0x01
 )

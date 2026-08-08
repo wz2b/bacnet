@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/wz2b/bacnet/apdu"
-	"github.com/wz2b/bacnet/bactypes"
+	"github.com/wz2b/bacnet/defs"
 )
 
 func TestIAmRoundTrip(t *testing.T) {
@@ -39,7 +39,7 @@ func TestIAmRoundTrip(t *testing.T) {
 		t.Errorf("VendorID: got %d, want %d", decoded.VendorID, original.VendorID)
 	}
 
-	_ = bactypes.ObjectType(0) // remove if import isn't needed
+	_ = defs.ObjectType(0) // remove if import isn't needed
 }
 
 func TestIAmEncoding(t *testing.T) {

@@ -1,11 +1,13 @@
 package defs
 
-// Maintenance constants.
+type MaintenanceState uint16
+
 const (
-	MaintenanceNone uint16 = 0x00
-	MaintenancePeriodicTest uint16 = 0x01
-	MaintenanceNeedServiceOperational uint16 = 0x02
-	MaintenanceNeedServiceInoperative uint16 = 0x03
-	MaintenanceProprietaryMin uint16 = 0x100
-	MaintenanceProprietaryMax uint16 = 0xFFFF
+	MaintenanceNone                   MaintenanceState = 0x00
+	MaintenancePeriodicTest           MaintenanceState = 0x01
+	MaintenanceNeedServiceOperational MaintenanceState = 0x02
+	MaintenanceNeedServiceInoperative MaintenanceState = 0x03
+
+	MaintenanceProprietaryMin MaintenanceState = 0x100
+	MaintenanceProprietaryMax MaintenanceState = 0xFFFF
 )

@@ -23,7 +23,7 @@ func DecodeReadPropertyACK(a *apdu.APDU) (*ReadPropertyACK, error) {
 		)
 	}
 
-	if a.ServiceChoice != defs.ServiceConfirmedReadProperty {
+	if a.ConfirmedServiceChoice != defs.ServiceConfirmedReadProperty {
 		return nil, fmt.Errorf(
 			"APDU is not a ReadProperty ACK",
 		)

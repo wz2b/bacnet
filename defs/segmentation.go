@@ -1,10 +1,14 @@
 package defs
 
-// Segmentation constants.
+type Segmentation byte
+
 const (
-	SegmentationBoth byte = 0x00
-	SegmentationTransmit byte = 0x01
-	SegmentationReceive byte = 0x02
-	SegmentationNone byte = 0x03
-	MaxSegmentation byte = 0x04
+	SegmentationBoth     Segmentation = 0x00
+	SegmentationTransmit Segmentation = 0x01
+	SegmentationReceive  Segmentation = 0x02
+	SegmentationNone     Segmentation = 0x03
 )
+
+func (s Segmentation) Valid() bool {
+	return s <= SegmentationNone
+}

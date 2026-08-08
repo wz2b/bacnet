@@ -1,8 +1,10 @@
 package defs
 
+type AcknowledgementFilterType byte
+
 // Acknowledgment filter constants.
 const (
-	AcknowledgmentFilterAll byte = 0x00
-	AcknowledgmentFilterAcked byte = 0x01
-	AcknowledgmentFilterNotAcked byte = 0x02
+	AcknowledgmentFilterAll      AcknowledgementFilterType = 0x00
+	AcknowledgmentFilterAcked    AcknowledgementFilterType = 0x01
+	AcknowledgmentFilterNotAcked byte                      = 0x02
 )

@@ -1,11 +1,13 @@
 package defs
 
+type SilenceState uint16
+
 // Silenced state constants.
 const (
-	SilencedStateUnsilenced uint16 = 0x00
-	SilencedStateAudibleSilenced uint16 = 0x01
-	SilencedStateVisibleSilenced uint16 = 0x02
-	SilencedStateAllSilenced uint16 = 0x03
-	SilencedStateProprietaryMin uint16 = 0x40
-	SilencedStateProprietaryMax uint16 = 0xFFFF
+	SilencedStateUnsilenced      SilenceState = 0x00
+	SilencedStateAudibleSilenced SilenceState = 0x01
+	SilencedStateVisibleSilenced SilenceState = 0x02
+	SilencedStateAllSilenced     SilenceState = 0x03
+	SilencedStateProprietaryMin  SilenceState = 0x40
+	SilencedStateProprietaryMax  SilenceState = 0xFFFF
 )

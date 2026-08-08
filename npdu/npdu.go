@@ -14,9 +14,9 @@ type NPDU struct {
 	ProtocolVersion byte
 	ExpectingReply  bool
 	NetworkLayer    bool
-	Priority        byte
+	Priority        defs.MessagePriority
 
-	MessageType byte
+	MessageType defs.NetworkMessageType
 	VendorID    uint16
 	HopCount    byte
 
@@ -38,7 +38,7 @@ func NewNPDU(
 	payload []byte,
 	dest, src *bactypes.Address,
 	expectReply bool,
-	priority byte,
+	priority defs.MessagePriority,
 ) *NPDU {
 	return &NPDU{
 		PDU:             append([]byte(nil), payload...),
@@ -55,7 +55,7 @@ func NewNetworkLayerNPDU(
 	payload []byte,
 	dest, src *bactypes.Address,
 	expectReply bool,
-	priority byte,
+	priority defs.MessagePriority,
 ) *NPDU {
 	n := NewNPDU(
 		payload,
@@ -82,7 +82,7 @@ func (n *NPDU) Encode() ([]byte, error) {
 		)
 	}
 
-	control := n.Priority & 0x03
+	control := byte(n.Priority) & 0x03
 
 	if n.NetworkLayer {
 		control |= codec.BIT7
@@ -184,7 +184,7 @@ func (n *NPDU) Encode() ([]byte, error) {
 	if n.NetworkLayer {
 		header = append(
 			header,
-			n.MessageType,
+			byte(n.MessageType),
 		)
 
 		if n.MessageType >= 0x80 {
@@ -252,7 +252,7 @@ func Decode(data []byte) (*NPDU, error) {
 		control&codec.BIT2 != 0
 
 	result.Priority =
-		control & 0x03
+		defs.MessagePriority(control & 0x03)
 
 	offset := 2
 
@@ -376,7 +376,8 @@ func Decode(data []byte) (*NPDU, error) {
 			)
 		}
 
-		result.MessageType = data[offset]
+		result.MessageType =
+			defs.NetworkMessageType(data[offset])
 		offset++
 
 		if result.MessageType >= 0x80 {

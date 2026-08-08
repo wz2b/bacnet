@@ -1,15 +1,17 @@
 package defs
 
-// Logging constants.
+type LogStatus byte
+
 const (
-	LogStatusLogDisabled byte = 0x00
-	LogStatusBufferPurged byte = 0x01
-	LogStatusLogInterrupted byte = 0x02
+	LogStatusLogDisabled    LogStatus = 0x00
+	LogStatusBufferPurged   LogStatus = 0x01
+	LogStatusLogInterrupted LogStatus = 0x02
 )
 
-// Logging constants.
+type LoggingType byte
+
 const (
-	LoggingTypePolled byte = 0x00
-	LoggingTypeCOV byte = 0x01
-	LoggingTypeTriggered byte = 0x02
+	LoggingTypePolled    LoggingType = 0x00
+	LoggingTypeCOV       LoggingType = 0x01
+	LoggingTypeTriggered LoggingType = 0x02
 )

@@ -1,55 +1,70 @@
 package defs
 
-// Event States
+type EventState byte
+
 const (
-	EventStateNormal byte = 0x00
-	EventStateFault byte = 0x01
-	EventStateOffnormal byte = 0x02
-	EventStateHighLimit byte = 0x03
-	EventStateLowLimit byte = 0x04
+	EventStateNormal    EventState = 0x00
+	EventStateFault     EventState = 0x01
+	EventStateOffnormal EventState = 0x02
+	EventStateHighLimit EventState = 0x03
+	EventStateLowLimit  EventState = 0x04
 )
 
-// Event Enables
+type EventEnable byte
+
 const (
-	EventEnableToOffnormal byte = 0x01
-	EventEnableToFault byte = 0x02
-	EventEnableToNormal byte = 0x04
-	EventLowLimitEnable byte = 0x01
-	EventHighLimitEnable byte = 0x02
+	EventEnableToOffnormal EventEnable = 0x01
+	EventEnableToFault     EventEnable = 0x02
+	EventEnableToNormal    EventEnable = 0x04
 )
 
-// Event Types
+type LimitEnable byte
+
 const (
-	EventChangeOfBitstring uint16 = 0x00
-	EventChangeOfState uint16 = 0x01
-	EventChangeOfValue uint16 = 0x02
-	EventCommandFailure uint16 = 0x03
-	EventFloatingLimit uint16 = 0x04
-	EventOutOfRange uint16 = 0x05
-	EventChangeOfLifeSafety uint16 = 0x08
-	EventExtended uint16 = 0x09
-	EventBufferReady uint16 = 0x0A
-	EventUnsignedRange uint16 = 0x0B
-	EventProprietaryMin uint16 = 0x40
-	EventProprietaryMax uint16 = 0xFFFF
+	EventLowLimitEnable  LimitEnable = 0x01
+	EventHighLimitEnable LimitEnable = 0x02
 )
 
-// Event state Filters
+type EventType uint16
+
 const (
-	EventStateFilterOffnormal byte = 0x00
-	EventStateFilterFault byte = 0x01
-	EventStateFilterNormal byte = 0x02
-	EventStateFilterAll byte = 0x03
-	EventStateFilterActive byte = 0x04
+	EventChangeOfBitstring  EventType = 0x00
+	EventChangeOfState      EventType = 0x01
+	EventChangeOfValue      EventType = 0x02
+	EventCommandFailure     EventType = 0x03
+	EventFloatingLimit      EventType = 0x04
+	EventOutOfRange         EventType = 0x05
+	EventChangeOfLifeSafety EventType = 0x08
+	EventExtended           EventType = 0x09
+	EventBufferReady        EventType = 0x0A
+	EventUnsignedRange      EventType = 0x0B
+
+	EventProprietaryMin EventType = 0x40
+	EventProprietaryMax EventType = 0xFFFF
 )
 
-// Event transitions and bitmasks
+type EventStateFilter byte
+
 const (
-	TransitionToOffnormal byte = 0x00
-	TransitionToFault byte = 0x01
-	TransitionToNormal byte = 0x02
-	MaxEventTransition byte = 0x03
-	TransitionToOffnormalMasked byte = 0x01
-	TransitionToFaultMasked byte = 0x02
-	TransitionToNormalMasked byte = 0x04
+	EventStateFilterOffnormal EventStateFilter = 0x00
+	EventStateFilterFault     EventStateFilter = 0x01
+	EventStateFilterNormal    EventStateFilter = 0x02
+	EventStateFilterAll       EventStateFilter = 0x03
+	EventStateFilterActive    EventStateFilter = 0x04
+)
+
+type EventTransition byte
+
+const (
+	TransitionToOffnormal EventTransition = 0x00
+	TransitionToFault     EventTransition = 0x01
+	TransitionToNormal    EventTransition = 0x02
+)
+
+type EventTransitionMask byte
+
+const (
+	TransitionToOffnormalMasked EventTransitionMask = 0x01
+	TransitionToFaultMasked     EventTransitionMask = 0x02
+	TransitionToNormalMasked    EventTransitionMask = 0x04
 )

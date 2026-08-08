@@ -44,9 +44,9 @@ func (r ReadPropertyRequest) APDU() apdu.APDU {
 	}
 
 	return apdu.APDU{
-		Type:          defs.PDUTypeConfirmedServiceRequest,
-		ServiceChoice: defs.ServiceConfirmedReadProperty,
-		Data:          data[:offset],
+		Type:                   defs.PDUTypeConfirmedServiceRequest,
+		ConfirmedServiceChoice: defs.ServiceConfirmedReadProperty,
+		Data:                   data[:offset],
 	}
 }
 
@@ -57,7 +57,7 @@ func DecodeReadPropertyRequest(a *apdu.APDU) (*ReadPropertyRequest, error) {
 		)
 	}
 
-	if a.ServiceChoice != defs.ServiceConfirmedReadProperty {
+	if a.ConfirmedServiceChoice != defs.ServiceConfirmedReadProperty {
 		return nil, fmt.Errorf(
 			"APDU is not a ReadProperty request",
 		)
@@ -228,8 +228,8 @@ func (r ReadPropertyACK) APDU() apdu.APDU {
 	)
 
 	return apdu.APDU{
-		Type:          defs.PDUTypeComplexACK,
-		ServiceChoice: defs.ServiceConfirmedReadProperty,
-		Data:          data[:offset],
+		Type:                   defs.PDUTypeComplexACK,
+		ConfirmedServiceChoice: defs.ServiceConfirmedReadProperty,
+		Data:                   data[:offset],
 	}
 }

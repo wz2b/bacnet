@@ -6,12 +6,13 @@ import (
 
 	"github.com/wz2b/bacnet/apdu"
 	"github.com/wz2b/bacnet/bactypes"
+	"github.com/wz2b/bacnet/defs"
 )
 
 func TestReadPropertyACKEncoding(t *testing.T) {
 	msg := ReadPropertyACK{
 		Object: bactypes.ObjectID{
-			Type:     bactypes.ObjectType(2), // Analog Value
+			Type:     defs.ObjectType(2), // Analog Value
 			Instance: 1234,
 		},
 		PropertyIdentifier: 85, // Present Value
@@ -121,7 +122,7 @@ func TestReadPropertyACKDecoding(t *testing.T) {
 	}
 
 	wantObject := bactypes.ObjectID{
-		Type:     bactypes.ObjectType(2),
+		Type:     defs.ObjectType(2),
 		Instance: 1234,
 	}
 
