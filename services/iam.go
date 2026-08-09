@@ -92,7 +92,7 @@ func DecodeIAm(a *apdu.APDU) (*IAm, error) {
 	}
 	decodeIdx += n
 
-	if objectType != defs.ObjectType(defs.ObjectDevice) {
+	if objectType != defs.ObjectDevice {
 		return nil, fmt.Errorf(
 			"I-Am object identifier is not a device object: %d",
 			objectType,
