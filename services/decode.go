@@ -27,6 +27,9 @@ func Decode(a *apdu.APDU) (any, error) {
 		case defs.ServiceUnconfirmedWhoIs:
 			return DecodeWhoIs(a)
 
+		case defs.ServiceUnconfirmedCOVNotification:
+			return DecodeUnconfirmedCOVNotification(a)
+
 		default:
 			return &apdu.UnknownAPDUService{
 				APDU: *a,
@@ -41,6 +44,18 @@ func Decode(a *apdu.APDU) (any, error) {
 		case defs.ServiceConfirmedReadProperty:
 			return DecodeReadPropertyRequest(a)
 
+		case defs.ServiceConfirmedCOVNotification:
+			return DecodeConfirmedCOVNotification(a)
+
+		case defs.ServiceConfirmedSubscribeCOV:
+			return DecodeSubscribeCOV(a)
+
+		case defs.ServiceConfirmedSubscribeCOVProperty:
+			return DecodeSubscribeCOVProperty(a)
+
+		case defs.ServiceConfirmedAtomicReadFile:
+			return DecodeAtomicReadFileRequest(a)
+
 		default:
 			return &apdu.UnknownAPDUService{
 				APDU: *a,
@@ -51,6 +66,9 @@ func Decode(a *apdu.APDU) (any, error) {
 		switch defs.ConfirmedServiceChoice(a.ConfirmedServiceChoice) {
 		case defs.ServiceConfirmedReadProperty:
 			return DecodeReadPropertyACK(a)
+
+		case defs.ServiceConfirmedAtomicReadFile:
+			return DecodeAtomicReadFileACK(a)
 
 		default:
 			return &apdu.UnknownAPDUService{

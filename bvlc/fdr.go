@@ -2,6 +2,7 @@ package bvlc
 
 import (
 	"encoding/binary"
+	"errors"
 	"fmt"
 
 	"github.com/wz2b/bacnet/defs"
@@ -154,4 +155,68 @@ func DecodeReadForeignDeviceTableAck(
 	}
 
 	return result, nil
+}
+
+/*
+ * Register-Foreign-Device
+ */
+
+func (r *RegisterForeignDevice) Encode() ([]byte, error) {
+	if r == nil {
+		return nil, errors.New("nil RegisterForeignDevice")
+	}
+
+	b, err := r.BVLC()
+	if err != nil {
+		return nil, err
+	}
+
+	return b.Encode()
+}
+
+func (r *RegisterForeignDevice) BVLC() (*BVLC, error) {
+	if r == nil {
+		return nil, errors.New("nil RegisterForeignDevice")
+	}
+
+	payload := make([]byte, 2)
+
+	binary.BigEndian.PutUint16(
+		payload,
+		r.TTL,
+	)
+
+	return &BVLC{
+		BVLLType: BVLCTypeBACnetIP,
+		Function: defs.BVLCFunctionRegisterForeignDevice,
+		Payload:  payload,
+	}, nil
+}
+
+func DecodeRegisterForeignDevice(
+	b *BVLC,
+) (*RegisterForeignDevice, error) {
+	if b == nil {
+		return nil, errors.New("nil BVLC")
+	}
+
+	if b.Function != defs.BVLCFunctionRegisterForeignDevice {
+		return nil, fmt.Errorf(
+			"BVLC function is %v, not Register-Foreign-Device",
+			b.Function,
+		)
+	}
+
+	if len(b.Payload) != 2 {
+		return nil, fmt.Errorf(
+			"invalid Register-Foreign-Device payload length: %d",
+			len(b.Payload),
+		)
+	}
+
+	return &RegisterForeignDevice{
+		TTL: binary.BigEndian.Uint16(
+			b.Payload,
+		),
+	}, nil
 }

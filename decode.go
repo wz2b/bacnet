@@ -5,6 +5,7 @@ import (
 
 	"github.com/wz2b/bacnet/apdu"
 	"github.com/wz2b/bacnet/bvlc"
+	"github.com/wz2b/bacnet/defs"
 	"github.com/wz2b/bacnet/npdu"
 	"github.com/wz2b/bacnet/services"
 )
@@ -47,7 +48,21 @@ func Decode(data []byte) (Message, error) {
 	// NPDU
 	//
 
-	n, err := npdu.Decode(b.Payload)
+	npduData := b.Payload
+
+	if b.Function == defs.BVLCFunctionForwardedNPDU {
+		forwarded, err := bvlc.DecodeForwardedNPDU(b)
+		if err != nil {
+			return result, fmt.Errorf(
+				"decode Forwarded-NPDU: %w",
+				err,
+			)
+		}
+
+		npduData = forwarded.NPDU
+	}
+
+	n, err := npdu.Decode(npduData)
 	if err != nil {
 		return result, fmt.Errorf("decode NPDU: %w", err)
 	}
