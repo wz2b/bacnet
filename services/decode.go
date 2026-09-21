@@ -44,6 +44,9 @@ func Decode(a *apdu.APDU) (any, error) {
 		case defs.ServiceConfirmedReadProperty:
 			return DecodeReadPropertyRequest(a)
 
+		case defs.ServiceConfirmedWriteProperty:
+			return DecodeWritePropertyRequest(a)
+
 		case defs.ServiceConfirmedCOVNotification:
 			return DecodeConfirmedCOVNotification(a)
 
